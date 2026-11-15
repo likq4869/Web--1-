@@ -52,22 +52,50 @@
 
 ### 0.3 项目当前真实状态（务必让 Cursor 知道）
 
+> ⚠️ **本节已于 2026-11-15 随 P0 工程基座完成而更新。**
+> 原版本记载的「无 Git 仓库 / 无依赖清单 / 无 README / 数据集丢失」**均已不成立**，
+> 下表是当前唯一有效的事实来源。
+
 ```yaml
 现状:
   后端: FastAPI + SQLite + 裸 SQL，已实现 health/sources/stats/events/review/alerts/self-check
   采集: detect.py 单进程单摄像头，YOLOv8 track，跨帧投票判定，写 passes/events
   算法: tracks.py（纯函数）+ selfcheck.py（模型 pin + 三态判定 + 推理名额控制）
   前端: miniprogram/ = UniApp 微信小程序（Vue3 + TS），仅"拍照自查"单页
+
+  已完成:
+    - Git 仓库已建立（仓库根 = E:/AI办公比赛/bisai），首个提交 86f8eba
+    - helmet-guard/pyproject.toml 依赖与工具配置（ruff/mypy/pytest/coverage）
+    - helmet-guard/README.md + .env.example + .gitignore + .gitattributes
+    - helmet-guard/tests/conftest.py（测试隔离 + tmp_path 落盘规避）
+    - 质量门禁全绿：ruff check 0 错 / mypy strict 0 错 / pytest 34 通过 / 覆盖率 71.22%
+    - Python 3.14.5（D:\Pycharm\python3.14），torch 2.15.0 + ultralytics 8.4.213
+    - 数据集完整，无需恢复（详见下方「数据集」段）
+
   缺失:
-    - 无 Git 仓库
-    - 无 requirements.txt / pyproject.toml
-    - 无 README.md
+    - 无 app/core/（config/errors/security/middleware/deps 尚未抽象）
+    - 无 app/models/ 与 app/repositories/（仍是裸 SQL）
+    - 无 Alembic 迁移体系
+    - 无 app/schemas/（响应体未 Pydantic 化）
     - 无 Vue3 管理后台（admin-web/ 不存在）
     - 无数据库业务表（仅 6 张表）
     - 无认证鉴权
-    - 数据集图片/标签已丢失（仅剩 .cache）
+    - 无 CI（.github/workflows/ 未建立）
+
+  数据集:
+    状态: 完整，无需恢复
+    位置: helmet-guard/dataset/ebike_helmet_v2/（train 1930 | valid 467 | test 289）
+          helmet-guard/dataset/roboflow_motorcycle/（train 1110 | valid 105 | test 53）
+    说明: 图片与标签一一对应、数量完全相等；*.cache 仅为 YOLO 训练时生成的
+          标签缓存索引，不是数据本体。data.yaml 的 split 名为 valid（非 val）。
+    约束: 绝不删除或覆盖 E:/AI办公比赛/bisai/数据集/ 下的原始 zip
+
   模型: YOLOv8n，20 epoch CPU 训练，mAP50=0.457 recall=0.425 precision=0.696
 ```
+
+> 📌 **给 Cursor 的强制提醒**：若某提示词框的前提与上述现状冲突
+> （例如声称数据集需要恢复、声称仓库尚未建立），**以本节为准**，
+> 不要重复执行已完成的工作。
 
 ---
 
@@ -79,7 +107,8 @@
 
 ```
 【类型与静态检查】
-- Python 3.11+，全部函数/方法必须带完整类型注解（含 -> 返回值）
+- Python 3.11+（当前项目实际运行时为 3.14.5，基础解释器在 D:\Pycharm\python3.14），
+  全部函数/方法必须带完整类型注解（含 -> 返回值）
 - 禁止裸 except；必须 except SpecificError as e 且 e 必须被使用或记录
 - 禁止 type: ignore 无注释理由；禁止 # noqa 无规则编号
 - 使用 mypy strict 模式，必须零错误
@@ -134,10 +163,10 @@ domain 层      →  纯函数领域逻辑（判定、决策、融合），零 I
 - 测试命名：test_<单元>_<场景>_<期望>
 - 测试必须确定性（固定随机种子、禁止真实网络调用）
 - 禁止 sleep 等待，用事件/条件变量
-"""
 
 ### 1.2 前端专项约束
 
+```
 ```
 【Apple HIG 风格（强制）】
 - 克制：不用渐变、不用阴影堆叠、不用毛玻璃、不用花哨动效
@@ -168,7 +197,7 @@ domain 层      →  纯函数领域逻辑（判定、决策、融合），零 I
 - API 类型从后端 OpenAPI 自动生成（openapi-typescript），不手写重复类型
 - 组件命名用 PascalCase，文件名与组件名一致
 - 禁止在组件中直接写死 URL 常量
-"""
+
 ```
 
 ---
@@ -185,7 +214,7 @@ domain 层      →  纯函数领域逻辑（判定、决策、融合），零 I
 后端完成身份绑定与 AI 分级决策，管理员审批后生效，学生在小程序查看积分、申诉与奖励。
 
 ## 目录结构
-```
+    ```
 e:/AI办公比赛/bisai/
 ├── helmet-guard/          # 后端 + 采集进程（Python）
 │   ├── app/
@@ -206,7 +235,7 @@ e:/AI办公比赛/bisai/
 ├── miniprogram/           # UniApp 微信小程序（学生端）
 ├── 数据集/                 # 原始数据集（不进 Git LFS 主体）
 └── docs文档/               # 设计与文档
-```
+    ```
 
 ## 不可违反的原则
 
@@ -232,6 +261,19 @@ e:/AI办公比赛/bisai/
 - `app/main.py` — 心跳驱动的健康检查（不猜测文件状态）
 - `miniprogram/src/pages/index/index.vue` — 严格状态机 + 请求序号防竞态
 - `miniprogram/src/utils/selfcheck.ts` — 响应清洗（sanitize）与错误码映射
+- `helmet-guard/dataset/` — **数据集是完整的，禁止删除/覆盖/重新解压**
+  （原始 zip 在 `E:\AI办公比赛\bisai\数据集\`，同样禁止动）
+
+## 数据安全红线（任何阶段都适用）
+
+1. **绝不删除或覆盖** `E:\AI办公比赛\bisai\数据集\*.zip` 原始压缩包。
+2. **绝不解压 zip 覆盖 `helmet-guard/dataset/`** —— 该目录数据完整
+   （ebike_helmet_v2: train 1930 / valid 467 / test 289；
+   roboflow_motorcycle: train 1110 / valid 105 / test 53），
+   图片与标签一一对应。历史上曾误判其"已丢失"，导致重复解压风险。
+3. 审计脚本对 `dataset/` **只读**，产物只能写入 `docs文档/` 与 `scripts/`。
+4. `dataset/` 保持在 `.gitignore` 中，不入库（数据集体量大）。
+5. `data.yaml` 的 split 名为 `valid`（非 `val`），**不要改名**。
 
 ## 开发流程要求
 
@@ -267,21 +309,54 @@ e:/AI办公比赛/bisai/
 > **目标**：把现有原型升级为企业级工程基座。**不要写业务功能。**
 > **预计产出**：Git 仓库、依赖管理、配置体系、异常体系、数据库迁移工具、测试基座、admin-web 骨架。
 
-### 3.1 P0-1：工程基座初始化
+### P0 阶段完成状态（2026-11-15 更新）
+
+| 任务 | 状态 | 说明 |
+|---|---|---|
+| **3.1 P0-1 工程基座初始化** | 🟡 **部分完成** | 见下方说明 |
+| 3.2 P0-2 数据库迁移与仓储基座 | ⬜ 未开始 | — |
+| 3.3 P0-3 管理后台骨架（Vue3） | ⬜ 未开始 | — |
+| 3.4 P0-4 数据集审计与版本管理 | ⬜ 未开始 | 前提已修订（数据集完整） |
+
+**P0-1 已完成的部分**（**不要重复执行**）：
+- ✅ Git 仓库（仓库根 `E:/AI办公比赛/bisai`），首个提交 `86f8eba`
+- ✅ `helmet-guard/pyproject.toml`（依赖 + ruff/mypy/pytest/coverage 配置）
+- ✅ `helmet-guard/.gitignore`、`.gitattributes`、`.env.example`
+- ✅ `helmet-guard/README.md`
+- ✅ `helmet-guard/tests/conftest.py`（tmp_db / client fixture + 模型 pin 隔离 + tmp_path 落盘）
+- ✅ 质量门禁全绿：ruff 0 错、mypy strict 0 错、pytest 34 通过、覆盖率 71.22%
+- ✅ Python 3.14.5（`D:\Pycharm\python3.14`），torch 2.15.0 + ultralytics 8.4.213
+
+**P0-1 仍需完成的部分**（**下次执行从这里开始**）：
+- ⬜ `app/core/` 包：`config.py` / `logging.py` / `errors.py` / `security.py` /
+  `middleware.py` / `deps.py`
+- ⬜ `app/schemas/` 包：`common.py`（Page[T] / ErrorResponse / 分页基类）
+- ⬜ `.github/workflows/backend.yml` CI 门禁（见 §11.1）
+- ⬜ `AGENTS.md` 项目宪法（第 2 部分内容）落盘到仓库根
+
+> 执行 P0-1 剩余部分时，**先读 `helmet-guard/pyproject.toml` 与
+> `helmet-guard/tests/conftest.py`**，沿用既有配置与 fixture，不要重建。
+
+### 3.1 P0-1：工程基座初始化（剩余部分）
 
 ```
 【任务】为 helmet-guard 后端项目建立企业级工程基座。本阶段不实现任何新业务功能。
 
+【已完成，勿重复执行】Git 仓库（首个提交 86f8eba）、pyproject.toml、.gitignore、
+.gitattributes、.env.example、README.md、tests/conftest.py、ruff/mypy/pytest 全绿。
+本框只做**剩余项**。先读 helmet-guard/pyproject.toml 与
+helmet-guard/tests/conftest.py，沿用既有配置。
+
 【执行步骤】
 1. 先完整阅读 helmet-guard/app/ 下所有 .py 文件，理解现有代码风格与约定。
-2. 检查 E:/AI办公比赛/bisai 是否为 Git 仓库。若不是，执行 git init，
-   并创建 .gitignore（必须排除）：
-     runs/、data/、*.pt、*.db、*.db-wal、*.db-shm、node_modules/、dist/、
-     .venv/、__pycache__/、.pytest_cache/、.mypy_cache/、.ruff_cache/、
-     dataset/（大数据集不进 Git）、.env、*.log、.DS_Store
-   .gitignore 中为 .env 与 *.pt 添加说明注释。
-3. 创建 helmet-guard/pyproject.toml：
-   - [project] 元数据、requires-python = ">=3.11"
+2. 确认 Git 仓库状态（E:/AI办公比赛/bisai，已有提交 86f8eba）。
+   如需补充 .gitignore 规则，**追加而非重写**（既有规则已覆盖
+   runs/、data/、*.pt、*.db、node_modules/、dist/、.venv/、__pycache__/、
+   .pytest_cache/、.mypy_cache/、.ruff_cache/、dataset/、.env、*.log、.DS_Store
+   以及 .pytest_tmp/ 与临时脚本 1.py、hello.py）。
+3. 校对 helmet-guard/pyproject.toml（已存在，按需增补而非重建）：
+
+   - [project] 元数据、requires-python = ">=3.11"（当前实际 3.14.5，兼容）
    - 依赖：fastapi、uvicorn[standard]、pydantic>=2、pydantic-settings、
      sqlalchemy>=2.0、alembic、aiosqlite、psycopg[binary]、redis、
      python-jose[cryptography] 或 pyjwt、passlib[bcrypt]、
@@ -294,7 +369,7 @@ e:/AI办公比赛/bisai/
    - [tool.mypy] strict = true，warn_unreachable = true
    - [tool.pytest.ini_options] testpaths、asyncio_mode = "auto"
    - [tool.coverage.run] source = ["app"]
-4. 创建 helmet-guard/.env.example（列出所有配置项及说明，**不含真实值**）：
+4. 校对 helmet-guard/.env.example（已存在，补齐下列配置项说明，**不含真实值**）：
    APP_ENV、APP_DEBUG、DATABASE_URL、REDIS_URL、JWT_SECRET、JWT_ALGORITHM、
    ACCESS_TOKEN_EXPIRE_MINUTES、REFRESH_TOKEN_EXPIRE_DAYS、CORS_ORIGINS、
    HELMET_GUARD_MODE、HELMET_GUARD_DB、HELMET_GUARD_WEIGHTS、
@@ -318,10 +393,11 @@ e:/AI办公比赛/bisai/
 6. 创建 helmet-guard/app/schemas/ 包：
    - common.py：分页响应 Page[T]、ErrorResponse、分页查询参数基类
    - 预留 health.py 等后续模块的 schema 骨架（先只建 common）
-7. 创建 helmet-guard/tests/conftest.py：
-   - fixture: tmp_db（每个测试用独立临时 SQLite 文件）
-   - fixture: client（FastAPI TestClient，lifespan 内建表）
-   - fixture: seeded_data（最小可用的演示数据）
+7. 扩展 helmet-guard/tests/conftest.py（已存在 tmp_db / client，**追加不要重建**）：
+   - 既有：fixture: tmp_db（独立临时 SQLite）、fixture: client（TestClient，lifespan 建表）
+   - 既有：autouse 夹具重置 selfcheck 的进程级模型 pin（测试顺序隔离）
+   - 既有：pytest_configure 设置 PYTEST_DEBUG_TEMPROOT（规避本机 %TEMP% ACL 异常）
+   - 待追加：fixture: seeded_data（最小可用的演示数据）
    - 所有 fixture 可重复执行且互不干扰（测试间隔离）
 8. 运行 `ruff check .` 与 `mypy app` 与 `pytest`，把当前所有问题修复到全绿。
    修复时**允许修改 app/ 下既有代码**，但必须保持行为不变（除修复真实 bug），
@@ -488,55 +564,61 @@ e:/AI办公比赛/bisai/
       路由权限矩阵、Element Plus 主题覆写方式、截图或效果描述。
 ```
 
-### 3.4 P0-4：数据集抢救与 Git LFS
+### 3.4 P0-4：数据集审计与数据版本管理
+
+> ⚠️ **本节已于 2026-11-15 修订。** 原标题为「数据集抢救」，其前提
+> 「数据集图片/标签已丢失」经实测**不成立**——数据一直完好。
+> 原「从 zip 解压恢复」的全部步骤（解压、计数、重建目录）**一律不要执行**，
+> 那会覆盖掉一份完好的数据集。原任务的有效部分（审计脚本、泄漏检测、
+> 数据版本管理）保留如下。
 
 ```
-【任务】数据集图片/标签已丢失，需要从原始 zip 恢复并建立数据版本管理。
+【任务】审计现存数据集（确认完整性、类别分布、泄漏风险）并建立数据版本管理。
+
+【前置事实】（已实测，勿重复核查、勿覆盖）
+- helmet-guard/dataset/ebike_helmet_v2/{train,valid,test}/ —— 图片与标签一一对应，
+  数量为 train 1930 / valid 467 / test 289
+- helmet-guard/dataset/roboflow_motorcycle/{train,valid,test}/ —— train 1110 / valid 105 / test 53
+- data.yaml 的 split 名为 valid（不是 val），路径形如 ../valid/images —— 保持现状，不要改名
+- *.cache 是 YOLO 训练时生成的标签缓存索引（可重新生成），不是数据本体
+- 原始 zip 位于 E:/AI办公比赛/bisai/数据集/（2.97GB + 121MB），仅作备份，不得动
 
 【执行步骤】
-1. 现状确认：检查 helmet-guard/dataset/ebike_helmet_v2/{train,valid,test}，
-   确认只有 .cache 文件、无图片与标签。
-2. 原始压缩包位于 E:/AI办公比赛/bisai/数据集/：
-   - -------2023-3-19.v2i.yolov8.zip（约 2.97GB）
-   - Motorcycle helmet.v1-helmet_detection_v1.yolov8.zip（约 121MB）
-3. 恢复步骤（**必须解压到 E:/AI办公比赛/bisai/数据集/extracted/，
-   不要解压到 dataset/ 下，避免污染仓库**）：
-   - 逐个解压，输出每个 zip 的目录结构（前 3 层）与图片数量、标签数量
-   - 识别出哪个是 ebike_helmet_v2 对应的源数据
-   - 统计每个 zip 的类别分布（从标签文件解析 class id 计数）
-4. 建立 dataset/ebike_helmet_v2/ 的标准 YOLOv8 目录：
-   images/train, images/valid, images/test
-   labels/train, labels/valid, labels/test
-   （把 valid 改名为 val 要保持与现有 data.yaml 一致 —— 先读现有
-     dataset/ebike_helmet_v2/data.yaml 确认用的是 val 还是 valid）
-5. 编写脚本 scripts/audit_dataset.py：
+1. 编写 scripts/audit_dataset.py（只读审计，**不得修改 dataset/ 下任何文件**）：
    - 统计各 split 的图片数、标签数、每类实例数、空标签比例
    - 检查类别 id 是否越界（对照 data.yaml 的 names）
    - 检查图片与标签是否一一对应（有图无标 / 有标无图）
    - 检查坐标是否越界（x,y,w,h 必须归一化在 [0,1]）
-   - 检测数据泄漏风险：按图片内容哈希找出 train/val 重复图
+   - 检测数据泄漏风险：按图片内容哈希（SHA256）找出跨 split 重复图
    - 输出 Markdown 报告到 docs文档/数据集审计报告.md
-6. 在 data.yaml 中补充说明：类别 id 0=Cyclists, 1=helmet, 2=no helmet
-   （从标签实际内容核实，不要凭记忆写）
-7. 配置 Git LFS（可选但推荐）：
-   - git lfs install
-   - git lfs track "*.jpg" "*.png" "*.txt"（或按需）
-   - .gitattributes 写入
-   - 如果数据量过大不适合入库，则在 .gitignore 排除 dataset/ 并在
-     docs文档/ 数据说明.md 写清恢复步骤
+2. 核实类别 id 映射：在 data.yaml 中补充注释说明
+   类别 id 0=Cyclists, 1=helmet, 2=no helmet
+   （必须从标签实际内容统计核实，不要凭记忆写）
+3. 数据版本管理：
+   - 保留现有 .gitignore 对 dataset/ 的排除（数据集体量大，不入库）
+   - 新建 docs文档/数据说明.md：写清数据集来源、目录结构、split 规模、
+     类别映射、如何从原始 zip 重建（步骤供他人复现），以及「禁止删除原始 zip」的约束
+   - 可选：git lfs track "*.jpg" "*.png" "*.txt"（若评估需要纳管，
+     必须先评估仓库体积，超出合理范围则保持 .gitignore 排除）
+4. 建立 dataset/ 的只读保护说明：训练脚本、CI 脚本均不得写入 dataset/；
+   YOLO 的 .cache 生成属正常副作用，可允许但不应纳入版本控制
 
 【约束】
 - **绝对不要删除或覆盖原始 zip 文件**
-- 解压过程可能耗时较长，注意磁盘空间
+- **绝对不要解压 zip 覆盖 dataset/** —— 数据集是完好的，覆盖即造成不可逆损失
+- 审计脚本必须只读；如需写文件，只能写到 docs文档/ 与 scripts/ 下
 - 报告必须用真实统计数字，不能是估计值
 
 【验收】
-- 数据集恢复完整，图片数与标签数匹配
-- 审计报告包含真实统计
-- 训练能读取 data.yaml 并正常开始（跑 1 个 epoch 验证）
+- 审计报告生成，且图片数与标签数匹配（一一对应）
+- 报告包含真实统计（各类实例数、空标签率、跨 split 重复图数）
+- docs文档/数据说明.md 可让他人据此复现数据集
+- 训练能读取 data.yaml 并正常开始（跑 1 个 epoch 验证，不覆盖现有权重）
 
 【汇报】
-输出：两个 zip 的完整结构与统计、恢复后的数据集规模、
+输出：各 split 的真实统计（图片数/标签数/每类实例数）、
+      图片标签匹配结论、跨 split 重复图数量与结论、
+      类别 id 映射的核实依据、数据版本管理方案。
       类别分布表、审计发现的问题清单、训练冒烟测试结果。
 ```
 
