@@ -1,0 +1,24 @@
+# 统一换行符：仓库内一律存 LF，检出时 Windows 自动转 CRLF。
+# 避免 CRLF/LF 混杂导致的无意义全文件 diff。
+* text=auto eol=lf
+
+# Windows 专用脚本保留 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 二进制文件不做换行转换
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.pt binary
+*.onnx binary
+*.db binary
+*.zip binary
+
+# 小程序构建产物由 npm 生成，不入库
+miniprogram/dist/
+miniprogram/unpackage/

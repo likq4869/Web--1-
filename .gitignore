@@ -1,0 +1,71 @@
+# ---- 依赖与构建产物 ----
+node_modules/
+dist/
+unpackage/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+*.whl
+
+# ---- Python 缓存与检查器 ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.benchmarks/
+
+# ---- 运行时数据（不入库）----
+# 数据库为运行时状态，含点位/通行/事件等业务数据，不应进版本库
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# ---- 采集与训练产物 ----
+# 训练权重体积大且可由数据集复现；如需入库请走 Git LFS
+runs/
+weights/
+*.pt
+*.onnx
+*.engine
+
+# ---- 数据集 ----
+# 原始数据集体量大（GB 级），不进 Git；
+# 恢复步骤见 docs文档/数据说明.md
+dataset/
+数据集/
+*.cache
+
+# ---- 密钥与敏感信息 ----
+# .env 存放数据库口令、JWT 密钥、LLM/对象存储凭据，绝不入库
+.env
+.env.*
+!.env.example
+*secret*
+*key*
+*.pem
+*.p12
+
+# ---- 日志 ----
+*.log
+logs/
+
+# ---- IDE 与系统 ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ---- 临时目录 ----
+.pytest_tmp/
+*.tmp
+
+# ---- 临时脚本与脚手架 ----
+# 1.py 为空的临时文件；hello.py 为一次性环境自检脚本，均不入库
+/1.py
+helmet-guard/hello.py

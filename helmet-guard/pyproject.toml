@@ -1,0 +1,134 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "helmet-guard"
+version = "0.1.0"
+description = "校园头盔检测提醒助手：边缘侧检测 + 后端分级决策 + 积分闭环"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+
+# 运行时依赖：仅列 P0 阶段实际需要的包。
+# 重型依赖（ultralytics/torch/opencv）单独成组，便于按需安装。
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0",
+    "alembic>=1.14",
+    "aiosqlite>=0.20",
+    "redis>=5.2",
+    "python-jose[cryptography]>=3.3",
+    "passlib[bcrypt]>=1.7",
+    "python-multipart>=0.0.12",
+    "pillow>=11.0",
+    "httpx>=0.28",
+    "celery>=5.4",
+    "minio>=7.2",
+    "structlog>=24.4",
+    "tenacity>=9.0",
+    "openpyxl>=3.1",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+# 采集与推理（训练/检测/自查）。体积大，单独安装。
+vision = [
+    "ultralytics>=8.3",
+    "opencv-python>=4.10",
+]
+# 身份共现图谱匹配（可选，缺失时领域层走纯 Python 贪心降级）
+graph = [
+    "scipy>=1.13",
+]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["alembic/versions", ".venv", "dataset", "runs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "C4", "RET", "ARG"]
+# 测试代码允许未使用的参数（fixture 约定）与可变默认值
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# 测试里的断言参数与 fixture 注入不参与业务逻辑，放宽 ARG
+"tests/**" = ["ARG001", "ARG002", "ARG005"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+warn_no_return = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_reexport = true
+plugins = []
+exclude = ["^alembic/", "^dataset/", "^runs/", "^\\.venv/"]
+
+[[tool.mypy.overrides]]
+# 第三方库缺少类型注解时在此放宽，避免阻塞开发
+module = ["ultralytics.*", "cv2.*", "minio.*", "celery.*", "redis.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# ultralytics 未在 __all__ 中显式导出 YOLO（运行时可用，类型标注缺失）。
+# 仅放开「显式导出」检查，其余检查照常生效。
+module = ["ultralytics"]
+# 该错误发生在「使用方」模块（vision/selfcheck/detect），因此按使用方模块限定：
+# 只对这三个文件放开 attr-defined，避免全局放宽导致其他 attr-defined 漏检。
+follow_imports = "skip"
+implicit_reexport = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --strict-markers"
+# 沙箱环境 %TEMP% 的 ACL 异常（pytest-of-<user> 目录拒绝访问），
+# tmp_path 工厂无法在其中建目录。改由 conftest.py 提供 tmp_path 夹具，
+# 指向项目内可写目录，绕开系统 TEMP。
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+omit = [
+    "app/seed_demo.py",
+    # 采集主循环需要真实摄像头/视频源才能端到端覆盖；
+    # 其中的纯逻辑（跨帧投票、几何判定）已在 tracks.py / vision.py 中单测覆盖。
+    "app/detect.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+# 当前基线：P0 阶段既有代码的实测覆盖率约 63%。
+# 目标 70%（随 P1+ 领域层与仓储层单测补齐后达标），阈值随覆盖率提升逐步上调。
+fail_under = 60
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@overload",
+]

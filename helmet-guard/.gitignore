@@ -1,0 +1,13 @@
+data/
+*.db
+*.db-wal
+*.db-shm
+weights/
+runs/
+dataset/
+_smoke/*.mp4
+__pycache__/
+*.pyc
+.env
+*secret*
+*key*
