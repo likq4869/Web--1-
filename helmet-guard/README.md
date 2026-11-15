@@ -11,11 +11,12 @@ Git、类型检查、测试基线）已就位。业务表扩充、认证鉴权�
 
 ### 1. 环境准备
 
-需要 **Python 3.11 / 3.12**（3.13+ 暂未验证 `ultralytics` / `torch` 的 wheel 兼容性）。
+需要 **Python 3.12 / 3.13 / 3.14**（本项目当前使用 3.14.5，基础解释器在
+`D:\Pycharm\python3.14`；PyTorch 官方已提供 cp312/cp313/cp314 的 Windows wheel）。
 
 ```powershell
-# 创建虚拟环境
-py -3.12 -m venv .venv
+# 创建虚拟环境（-venv 需使用目标版本的基础解释器）
+py -3.14 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
 # 安装开发依赖（含采集/推理组）
