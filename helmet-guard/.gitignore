@@ -11,3 +11,23 @@ __pycache__/
 .env
 *secret*
 *key*
+
+# ---- P0 工程基座补充规则（追加，不改写既有条目） ----
+node_modules/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.benchmarks/
+.pytest_tmp/
+.coverage
+coverage.xml
+htmlcov/
+*.log
+.DS_Store
+Thumbs.db
+1.py
+hello.py

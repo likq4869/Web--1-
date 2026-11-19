@@ -193,7 +193,7 @@ def main(argv: list[str] | None = None) -> int:
         import ultralytics
 
         model = ultralytics.YOLO(str(weights_path))
-    except Exception as exc:  # noqa: BLE001
+    except (OSError, RuntimeError, ValueError) as exc:
         report(
             mode,
             args.source_id,
@@ -325,6 +325,7 @@ def main(argv: list[str] | None = None) -> int:
                 boxes_t = cast("Any", boxes)
                 xyxy = boxes_t.xyxy.cpu().tolist()
                 cls = boxes_t.cls.cpu().tolist()
+                confs = boxes_t.conf.cpu().tolist()
                 tids = (
                     boxes_t.id.cpu().tolist()
                     if boxes_t.id is not None
@@ -358,6 +359,24 @@ def main(argv: list[str] | None = None) -> int:
                         if status != "excluded":
                             ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())
                             pid = deduper.pass_id(args.source_id, run_id, tid)
+                            # 检测框证据：归一化 xyxy + 置信度 + 原图尺寸。
+                            # 审批详情据此渲染「证据帧 + 检测框叠加」，
+                            # 归一化坐标保证与容器同坐标系（横竖图不错位）。
+                            frame_boxes = [
+                                {
+                                    "label": str(names.get(int(c), int(c))),
+                                    "confidence": round(float(cf), 4),
+                                    "xyxy": [
+                                        round(bx1 / w, 5),
+                                        round(by1 / h, 5),
+                                        round(bx2 / w, 5),
+                                        round(by2 / h, 5),
+                                    ],
+                                }
+                                for (bx1, by1, bx2, by2), c, cf in zip(
+                                    xyxy, cls, confs, strict=True
+                                )
+                            ]
                             passed = {
                                 "pass_id": pid,
                                 "source_id": args.source_id,
@@ -365,6 +384,9 @@ def main(argv: list[str] | None = None) -> int:
                                 "occurred_at": ts,
                                 "rider_status": status,
                                 "model_raw": f"track-{tid}",
+                                "boxes": json.dumps(frame_boxes, ensure_ascii=False),
+                                "image_width": int(w),
+                                "image_height": int(h),
                                 "created_at": ts,
                             }
                             event = None

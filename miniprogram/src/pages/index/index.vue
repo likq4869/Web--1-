@@ -10,11 +10,11 @@
       <!-- 步骤指示：取景 → 确认 → 检测 → 结果 -->
       <view class="steps">
         <text class="step" :class="{ active: phase === 'capture' }">取景</text>
-        <text class="step-sep">›</text>
+        <UniIcons type="forward" color="#b9c4bc" size="12" />
         <text class="step" :class="{ active: phase === 'confirm' }">确认照片</text>
-        <text class="step-sep">›</text>
+        <UniIcons type="forward" color="#b9c4bc" size="12" />
         <text class="step" :class="{ active: isDetecting }">检测</text>
-        <text class="step-sep">›</text>
+        <UniIcons type="forward" color="#b9c4bc" size="12" />
         <text class="step" :class="{ active: phase === 'result' }">结果</text>
       </view>
 
@@ -103,7 +103,7 @@
         <view class="card status-card" :style="{ backgroundColor: statusMeta.tintBg }">
           <view class="status-row">
             <view class="status-icon" :style="{ backgroundColor: statusMeta.tint }">
-              <text class="status-glyph">{{ statusMeta.icon }}</text>
+              <UniIcons :type="statusMeta.iconType" color="#ffffff" size="20" />
             </view>
             <view class="status-texts">
               <text class="status-title" :style="{ color: statusMeta.tint }">{{ statusMeta.title }}</text>
@@ -152,7 +152,7 @@
       <!-- 次要连接设置 -->
       <view class="settings">
         <button class="settings-toggle" @click="showSettings = !showSettings">
-          <text>连接设置</text><text class="settings-chevron">{{ showSettings ? '⌃' : '⌄' }}</text>
+          <text>连接设置</text><UniIcons :type="showSettings ? 'up' : 'down'" color="#8e8e93" size="14" />
         </button>
         <view v-if="showSettings" class="settings-body">
           <text class="body-text">开发联调使用 http://127.0.0.1:8000；真机请改成电脑局域网 IP。</text>
@@ -178,6 +178,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { onUnload } from '@dcloudio/uni-app';
+import UniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 import {
   BASE_URL_KEY, DEFAULT_BASE_URL, STATUS_META,
   boxColor, detectErrorText, detailToText, getBaseUrl, parseBody,
@@ -442,111 +443,4 @@ try {
 } catch (_) {}
 </script>
 
-<style>
-.screen { width: 100%; min-height: 100vh; background: #F7F7F9; color: #1C1C1E; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
-/* 普通留白始终生效，安全区只单独增强底部，避免兼容性影响整条 padding。 */
-.content { width: 100%; box-sizing: border-box; padding: 20px 20px 24px; padding-bottom: calc(24px + constant(safe-area-inset-bottom)); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
-/* 大标题：32px 系统字重，统一留白 */
-.large-title-block { margin: 0 0 18px; }
-.large-title { display: block; font-size: 32px; font-weight: 700; line-height: 40px; letter-spacing: -0.6px; }
-.subtitle { display: block; max-width: 320px; margin-top: 8px; font-size: 14px; line-height: 22px; color: #6E6E73; }
-/* 步骤：安静的次要信息 */
-.steps { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
-.step { font-size: 12px; line-height: 18px; color: #8E8E93; }
-.step.active { color: #1C1C1E; font-weight: 600; }
-.step-sep { font-size: 13px; color: #C7C7CC; }
-/* 卡片：纯白实心、无 harsh 边框、轻圆角 */
-.card { box-sizing: border-box; background: #fff; border-radius: 18px; padding: 18px; margin-bottom: 14px; }
-.card-title { font-size: 17px; font-weight: 600; color: #000; margin-bottom: 8px; display: block; }
-.body-text { font-size: 14px; color: #3A3A3C; line-height: 20px; display: block; margin-bottom: 12px; }
-.tip { font-size: 12px; color: #8E8E93; margin-top: 8px; display: block; line-height: 16px; }
-.err { font-size: 13px; color: #D92D20; margin-top: 8px; display: block; line-height: 18px; }
-/* 取景器主导 */
-.capture-panel { width: 100%; }
-.camera-wrap { position: relative; width: 100%; border-radius: 22px; overflow: hidden; background: #111315; }
-.camera { display: block; width: 100%; height: calc(125vw - 50px); min-height: 280px; max-height: 480px; }
-.camera-fallback { box-sizing: border-box; display: flex; align-items: center; justify-content: center; min-height: 280px; padding: 40px 24px; color: #D1D1D6; font-size: 14px; text-align: center; }
-.framing-guide { position: absolute; top: 12%; right: 12%; bottom: 21%; left: 12%; }
-.guide-corner { position: absolute; width: 26px; height: 26px; border-style: solid; border-color: rgba(255,255,255,.8); border-width: 0; }
-.top-left { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; border-top-left-radius: 10px; }
-.top-right { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; border-top-right-radius: 10px; }
-.bottom-left { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; border-bottom-left-radius: 10px; }
-.bottom-right { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; border-bottom-right-radius: 10px; }
-.compose-hint { position: absolute; right: 0; bottom: 24px; left: 0; padding: 0 8px; color: #F2F2F7; font-size: 12px; line-height: 20px; text-align: center; }
-.camera-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; }
-.control-side { width: 72px; flex-shrink: 0; }
-.album-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 72px; margin: 0; padding: 8px 0; background: transparent; color: #636366; font-size: 12px; line-height: 18px; border-radius: 12px; }
-.album-icon { position: relative; width: 25px; height: 22px; box-sizing: border-box; border: 1.5px solid #636366; border-radius: 5px; }
-.album-icon::before { content: ''; position: absolute; top: 4px; right: 4px; width: 4px; height: 4px; border-radius: 50%; background: #636366; }
-.album-icon::after { content: ''; position: absolute; bottom: 3px; left: 5px; width: 9px; height: 9px; border-top: 1.5px solid #636366; border-left: 1.5px solid #636366; transform: rotate(45deg); }
-.shutter-action { display: flex; flex: 1; min-width: 0; flex-direction: column; align-items: center; gap: 8px; }
-.shutter-btn { display: flex; align-items: center; justify-content: center; width: 76px; height: 76px; box-sizing: border-box; margin: 0; padding: 5px; border: 2px solid #007AFF; border-radius: 50%; background: #F7F7F9; }
-.shutter-core { width: 100%; height: 100%; border-radius: 50%; background: #007AFF; }
-.shutter-label { color: #1C1C1E; font-size: 13px; line-height: 18px; font-weight: 500; }
-.shutter-pressed { opacity: .75; }
-.quiet-pressed { background: #EBEBF0; }
-.shutter-btn[disabled], .album-btn[disabled] { opacity: .45; }
-.privacy-note { display: block; margin-top: 20px; text-align: center; color: #8E8E93; font-size: 12px; line-height: 18px; }
-.denied { background: #FDECEA; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-.denied-title { font-weight: 600; font-size: 15px; color: #D92D20; display: block; margin-bottom: 4px; }
-.denied-text { font-size: 13px; color: #7A2E0E; line-height: 18px; margin-bottom: 8px; display: block; }
-/* 按钮层级：一主一次，主填充分割、次安静文字 */
-.action-col { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-.primary-btn, .quiet-btn { display: flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin: 0; padding: 0 16px; }
-.primary-btn { background: #007AFF; color: #fff; font-size: 17px; font-weight: 600; border-radius: 14px; min-height: 50px; line-height: 24px; }
-.primary-btn[disabled] { opacity: .5; }
-.quiet-btn { background: #F2F2F7; color: #007AFF; font-size: 15px; border-radius: 14px; min-height: 44px; line-height: 22px; }
-.quiet-btn[disabled] { opacity: .5; }
-.secondary-row { display: flex; gap: 8px; }
-.quiet-btn.half { flex: 1; width: auto; min-width: 0; }
-/* 预览：黑色实心底，检测框真实叠加 */
-.preview-wrap { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; }
-.preview-wrap.dim { opacity: .85; }
-.preview { width: 100%; height: 100%; display: block; }
-.box { position: absolute; border: 3px solid #1F9D46; box-sizing: border-box; }
-/* 标签放框内顶部，避免顶部框标签被 overflow 裁切 */
-.box-label { position: absolute; top: 0; left: 0; color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 0 0 6px 0; white-space: nowrap; max-width: 100%; overflow: hidden; }
-/* 检测中 */
-.detecting-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-.detecting-text { font-size: 14px; color: #3A3A3C; }
-.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #C7C7CC; border-top-color: #007AFF; animation: hg-spin 0.9s linear infinite; }
-@keyframes hg-spin { to { transform: rotate(360deg); } }
-/* 状态：文字 + 有意义图标，纯色底 */
-.status-card { padding: 16px; }
-.status-row { display: flex; gap: 12px; align-items: flex-start; }
-.status-icon { width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.status-glyph { color: #fff; font-size: 20px; font-weight: 700; }
-.status-texts { flex: 1; }
-.status-title { font-size: 20px; font-weight: 700; display: block; }
-.status-msg { font-size: 14px; color: #3A3A3C; display: block; margin-top: 4px; line-height: 20px; }
-/* iOS 列表节奏：只用分隔线 */
-.meta-list { margin-top: 4px; margin-bottom: 8px; }
-.meta-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F2F2F7; }
-.meta-row.last { border-bottom: none; }
-.meta-k { font-size: 13px; color: #8E8E93; flex-shrink: 0; }
-.meta-v { font-size: 13px; color: #000; text-align: right; flex: 1; word-break: break-all; }
-.mono { font-family: monospace; }
-/* 识别依据 */
-.ev-list { margin-top: 4px; }
-.ev-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F2F2F7; }
-.ev-row.last { border-bottom: none; }
-.ev-dot { width: 10px; height: 10px; border-radius: 5px; margin-top: 5px; flex-shrink: 0; }
-.ev-main { flex: 1; }
-.ev-label { font-size: 15px; color: #000; display: block; }
-.ev-box { font-size: 11px; color: #8E8E93; display: block; margin-top: 2px; word-break: break-all; }
-.ev-conf { font-size: 13px; color: #000; flex-shrink: 0; }
-.ev-empty { font-size: 13px; color: #8E8E93; padding: 8px 0; }
-/* 次要设置 */
-.settings { margin: 8px 0 0; }
-.settings-toggle { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; background: transparent; color: #6E6E73; font-size: 12px; padding: 0; margin: 0; line-height: 20px; }
-.settings-chevron { color: #8E8E93; font-size: 15px; }
-.settings-toggle::after { border: none; }
-.settings-body { background: #fff; border-radius: 12px; padding: 16px; }
-.url-row { margin: 8px 0; }
-.url-input { background: #F2F2F7; border-radius: 8px; padding: 10px 12px; font-size: 13px; min-height: 44px; }
-.preflight { margin-top: 8px; font-size: 13px; }
-.ok { color: #1F9D46; }
-.bad { color: #D92D20; }
-.bottom-space { height: 4px; }
-button::after { border: none; }
-</style>
+<style lang="scss" scoped src="./index.scss"></style>

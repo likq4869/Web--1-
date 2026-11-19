@@ -105,7 +105,7 @@ def mark_played(event_id: str) -> None:
                 (now_iso(), event_id),
             )
             _tx_commit(conn)
-        except Exception:
+        except sqlite3.Error:
             _tx_rollback(conn)
             raise
     finally:
@@ -125,7 +125,7 @@ def play_wav(path: str | Path) -> tuple[bool, str]:
 
         winsound.PlaySound(str(p), winsound.SND_FILENAME | winsound.SND_ASYNC)
         return True, f"playing {p.name} ~{duration:.1f}s"
-    except Exception as exc:  # noqa: BLE001
+    except (OSError, wave.Error, RuntimeError) as exc:
         return False, f"播放失败：{exc}"
 
 

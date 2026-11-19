@@ -1,0 +1,200 @@
+/* 我的页：访客态 + 档案卡 + 功能列表；令牌唯一来源，无原始色值。 */
+@use '../../styles/tokens.scss' as *;
+
+.screen {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: $color-bg;
+  color: $color-text;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.content {
+  width: 100%;
+  box-sizing: border-box;
+  padding: $space-5 $space-5 $space-6;
+  padding-bottom: calc(24px + constant(safe-area-inset-bottom));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+.card {
+  box-sizing: border-box;
+  background: $color-surface;
+  border: none;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  padding: $space-4 + 2px;
+  margin-bottom: $space-4;
+}
+
+.card-title {
+  display: block;
+  font-size: $font-size-headline;
+  font-weight: $font-weight-semibold;
+  color: $color-text;
+  margin-bottom: $space-2;
+}
+
+.body-text {
+  display: block;
+  font-size: $font-size-body;
+  color: $color-text-2;
+  line-height: 22px;
+  margin-bottom: $space-3;
+}
+
+.guest {
+  text-align: left;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: $radius-full;
+  background: $color-surface-2;
+  color: $color-text-2;
+  font-size: 22px;
+  font-weight: $font-weight-semibold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $space-3;
+}
+
+.avatar.is-login {
+  background: $color-primary-tint;
+  color: $color-primary;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 56px;
+  height: 56px;
+  border-radius: $radius-full;
+  background: $color-surface-2;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.action-col {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  margin-top: $space-3;
+}
+
+.primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 $space-4;
+  background: $color-primary;
+  color: $color-surface;
+  font-size: $font-size-headline;
+  font-weight: $font-weight-semibold;
+  border: none;
+  border-radius: $radius-lg;
+  min-height: 50px;
+  line-height: 24px;
+}
+
+.primary-btn:active {
+  transform: scale(0.96);
+}
+
+.tip {
+  display: block;
+  font-size: $font-size-caption;
+  color: $color-text-3;
+  margin-top: $space-2;
+  line-height: 16px;
+  text-align: center;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.profile-row .avatar {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.profile-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  display: block;
+  font-size: $font-size-headline;
+  font-weight: $font-weight-semibold;
+  color: $color-text;
+}
+
+.profile-sub {
+  display: block;
+  font-size: $font-size-footnote;
+  color: $color-text-3;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.profile-meta {
+  display: block;
+  font-size: $font-size-footnote;
+  color: $color-text-2;
+  margin-top: $space-2;
+}
+
+.list {
+  padding: 6px $space-4 + 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid $color-sep;
+  min-height: 44px;
+}
+
+.row.no-line {
+  border-bottom: none;
+}
+
+.row-label {
+  font-size: $font-size-body;
+  color: $color-text;
+}
+
+.row-label.is-danger {
+  color: $color-danger;
+}
+
+.foot {
+  display: block;
+  text-align: center;
+  font-size: $font-size-caption;
+  line-height: 18px;
+  color: $color-text-3;
+}
+
+.bottom-space {
+  height: 8px;
+}
+
+button::after {
+  border: none;
+}

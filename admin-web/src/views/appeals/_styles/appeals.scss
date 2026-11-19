@@ -1,0 +1,84 @@
+// 申诉处理页样式 —— 筛选栏 / 抽屉两栏 / 裁决区（≤100 行门禁）
+.hg-appeals__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.hg-appeals__search {
+  width: 240px;
+}
+
+.hg-appeals__select {
+  width: 140px;
+}
+
+.hg-appeals__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.hg-appeals__layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-4);
+}
+
+.hg-appeals__section-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-footnote-size);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.hg-appeals__kv {
+  margin: 0 0 var(--space-4);
+}
+
+.hg-appeals__kv-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-1) 0;
+  font-size: var(--text-footnote-size);
+  color: var(--color-text-2);
+}
+
+.hg-appeals__reason {
+  padding: var(--space-3);
+  font-size: var(--text-body-size);
+  color: var(--color-text);
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-md);
+}
+
+.hg-appeals__warn {
+  padding: var(--space-3);
+  font-size: var(--text-footnote-size);
+  color: var(--color-warning-text);
+  background-color: var(--color-warning-tint);
+  border-radius: var(--radius-md);
+}
+
+.hg-appeals__error {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-caption-size);
+  color: var(--color-danger);
+}
+
+.hg-appeals__empty-hint {
+  margin-top: var(--space-3);
+  font-size: var(--text-footnote-size);
+  color: var(--color-text-3);
+}
+
+@media (max-width: 900px) {
+  .hg-appeals__layout {
+    grid-template-columns: 1fr;
+  }
+}

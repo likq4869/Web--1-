@@ -20,9 +20,10 @@ dependencies = [
     "sqlalchemy>=2.0",
     "alembic>=1.14",
     "aiosqlite>=0.20",
+    "pymysql>=1.1",
     "redis>=5.2",
     "python-jose[cryptography]>=3.3",
-    "passlib[bcrypt]>=1.7",
+    "bcrypt>=4.1",
     "python-multipart>=0.0.12",
     "pillow>=11.0",
     "httpx>=0.28",
@@ -44,12 +45,19 @@ vision = [
 graph = [
     "scipy>=1.13",
 ]
+# 车牌 OCR（可选，缺失时走启发式裁剪 + 空识别降级，不中断采集）。
+# rapidocr-onnxruntime 内置 PP-OCRv3 的 det/rec/cls ONNX 权重（随包分发，
+# 无需联网下载），是 PaddleOCR 同源模型的轻量形态；生产可换 PaddleOCR PP-OCRv4。
+ocr = [
+    "rapidocr-onnxruntime>=1.2.3",
+]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-cov>=6.0",
     "ruff>=0.8",
     "mypy>=1.13",
+    "types-python-jose>=3.3",
 ]
 
 [tool.setuptools.packages.find]
@@ -85,7 +93,18 @@ exclude = ["^alembic/", "^dataset/", "^runs/", "^\\.venv/"]
 
 [[tool.mypy.overrides]]
 # 第三方库缺少类型注解时在此放宽，避免阻塞开发
-module = ["ultralytics.*", "cv2.*", "minio.*", "celery.*", "redis.*"]
+module = ["ultralytics.*", "cv2.*", "minio.*", "celery.*", "redis.*", "scipy.*"]
+    ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# OCR 可选依赖（rapidocr-onnxruntime）未提供 py.typed 标记，
+# 仅在 OCR 适配层放宽该第三方模块，不影响业务代码的类型检查。
+module = ["rapidocr_onnxruntime.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# openpyxl 未提供 py.typed 标记（Excel 导入仅在管理端使用）。
+module = ["openpyxl.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
@@ -123,9 +142,9 @@ omit = [
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-# 当前基线：P0 阶段既有代码的实测覆盖率约 63%。
-# 目标 70%（随 P1+ 领域层与仓储层单测补齐后达标），阈值随覆盖率提升逐步上调。
-fail_under = 60
+# B-5 门禁加固：批次 A 实测 82.18%、批次 B 实测 82.27%，阈值按渐进策略提到 80。
+# 禁止靠删 omit 或加 pragma 凑数，只能靠补测试（见企业级架构优化方案 §3.1）。
+fail_under = 80
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",

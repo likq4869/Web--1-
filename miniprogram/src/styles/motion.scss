@@ -1,0 +1,105 @@
+/* 全局动效工具（design.md §9.2 / §9.4 合规子集）。
+ * 只用令牌：时长 $duration-*，缓动 $ease-overdamped / $ease-underdamped，
+ * 禁止 cubic-bezier 字面量、禁止渐变/毛玻璃/阴影堆叠。
+ * 允许：按压回弹、成功勾选 pop、骨架脉动、列表淡入上移、数字淡入淡出、弹窗过阻尼进场。
+ * 禁止：视差/粒子爆散/水波纹/液态滑块/滚动驱动/循环动画（骨架/loading 除外）——见文件底部对照表。
+ */
+@use './tokens.scss' as *;
+
+/* 按压回弹 A：按下过阻尼 60–100ms scale(0.96)，松手欠阻尼回弹（CSS 单 transition 取过阻尼，保证吸附稳） */
+.pressable {
+  transition: transform $duration-fast $ease-overdamped, opacity $duration-fast $ease-overdamped;
+}
+.pressable:active {
+  transform: scale(0.96);
+}
+
+/* 列表/卡片进场：淡入 + 4px 上移，200ms 档用 $duration-base（250ms，上限内），过阻尼，一次到位 */
+@keyframes hg-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.anim-rise {
+  animation: hg-rise-in $duration-base $ease-overdamped both;
+}
+.anim-rise-1 {
+  animation: hg-rise-in $duration-base $ease-overdamped both;
+  animation-delay: 40ms;
+}
+.anim-rise-2 {
+  animation: hg-rise-in $duration-base $ease-overdamped both;
+  animation-delay: 80ms;
+}
+
+/* 成功勾选 / 庆祝 pop：欠阻尼，scale ≤ 1.12，位移 ≤ 4px，只回弹 1 次（§9.2.3） */
+@keyframes hg-pop-confirm {
+  0% {
+    transform: scale(0.96);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.anim-pop {
+  animation: hg-pop-confirm $duration-base $ease-underdamped both;
+}
+
+/* 骨架落位：脉动（§9.4 允许的循环），结构尺寸保持不变，内容到达即卸载 */
+@keyframes hg-skeleton-pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.skeleton-pulse {
+  animation: hg-skeleton-pulse 1200ms $ease-standard infinite;
+}
+
+/* 数字变化：淡出淡入（§9.4），tabular 由调用方保证，JS 侧 count-up ≤ 350ms */
+@keyframes hg-num-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.num-anim {
+  animation: hg-num-in $duration-fast $ease-overdamped both;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+/* 松手回弹（拖拽释放归位）：过阻尼，无过冲 —— 仅用于 LoginSheet 下滑关闭等吸附位移 */
+.sheet-settle {
+  transition: transform $duration-base $ease-overdamped;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable,
+  .sheet-settle {
+    transition: none;
+  }
+  .anim-rise,
+  .anim-rise-1,
+  .anim-rise-2,
+  .anim-pop,
+  .skeleton-pulse,
+  .num-anim {
+    animation: none;
+  }
+}

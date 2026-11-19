@@ -1,0 +1,167 @@
+// ===========================================================================
+// 常用 mixin —— 滚动条、截断、多行省略、滚动锁定
+// ===========================================================================
+
+/// 细滚动条（Apple 风格：轨道透明、滑块低对比）
+@mixin scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-4) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-text-4);
+    border-radius: var(--radius-full);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-text-3);
+  }
+}
+
+/// 隐藏滚动条但保留滚动能力
+@mixin scrollbar-hidden {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/// 单行省略
+@mixin ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/// 多行省略
+@mixin ellipsis-multi($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/// 锁定页面滚动（弹窗打开时）
+@mixin scroll-lock {
+  overflow: hidden;
+}
+
+/// 卡片基础样式：白底 + 18px 圆角 + 单层轻阴影
+@mixin card-surface {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+/// 嵌套层级表面：靠背景明度差（微明色阶）建立层次，不画 1px 边框。
+/// level 2 → surface-2（卡片内嵌/弹层底），level 3/4 同理。
+@mixin surface-raised($level: 2) {
+  @if $level == 4 {
+    background-color: var(--color-surface-4);
+  } @else if $level == 3 {
+    background-color: var(--color-surface-3);
+  } @else {
+    background-color: var(--color-surface-2);
+  }
+}
+
+/// 吸附过阻尼：用于抽屉/面板吸附/吸顶/Tab指示条，禁止用于点赞类反馈。
+@mixin motion-snap {
+  transition-timing-function: var(--ease-overdamped);
+}
+
+/// 点赞欠阻尼：用于点赞/收藏/审批通过/成功徽章，带轻微回弹。
+@mixin motion-like {
+  transition-timing-function: var(--ease-underdamped);
+}
+
+/// 流式输出逐字 blur 晕开：每个字符独立成 token，逐个延迟入场。
+/// 单字 180ms，每字延迟 12–16ms；同时动画节点 ≤ 200，超出降级逐词。
+@mixin stream-token {
+  display: inline-block;
+  white-space: pre;
+  animation: stream-blur-in 180ms var(--stream-ease) both;
+  animation-delay: var(--token-delay, 0ms);
+}
+
+@keyframes stream-blur-in {
+  from {
+    filter: blur(var(--stream-blur-from));
+    opacity: var(--stream-opacity-from);
+    transform: translateY(var(--stream-translate-y));
+  }
+
+  to {
+    filter: blur(var(--stream-blur-to));
+    opacity: var(--stream-opacity-to);
+    transform: translateY(0);
+  }
+}
+
+/// 点赞弹跳：缩放冲高后回落，配合 --ease-underdamped 使用。
+/// 幅度约束（§9.2.3）：scale ≤ 1.12、只回弹 1 次、时长 ≤ 250ms。
+@mixin like-bounce {
+  animation: like-bounce 220ms var(--ease-underdamped) both;
+}
+
+@keyframes like-bounce {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.12);
+  }
+
+  70% {
+    transform: scale(0.96);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/// 列表进入动画：淡入 + 4px 上移，200ms
+@mixin enter-fade-up {
+  animation: fade-up var(--duration-base) var(--ease-standard);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/// CSS 边框旋转 spinner（不依赖图标库）
+@mixin spinner-border($size: 16px) {
+  width: $size;
+  height: $size;
+  border: 2px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: spin 600ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

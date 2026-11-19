@@ -67,7 +67,7 @@ def inspect_weights_file(weights: Path) -> tuple[dict[int, str], str]:
     try:
         model = ultralytics.YOLO(str(p))
         names = dict(model.names)
-    except Exception as exc:  # noqa: BLE001
+    except (OSError, RuntimeError, ValueError) as exc:
         raise RuntimeError(f"权重加载失败：{p}，原因：{exc}") from exc
     ok, reason = is_helmet_weights(names)
     return names, ("ok: " + reason if ok else "reject: " + reason)

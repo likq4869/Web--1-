@@ -1,9 +1,36 @@
 # 校园头盔检测提醒助手 —— Cursor AI 开发提示词全集
 
-> 版本：v1.0
-> 日期：2026-11-15
+> 版本：v1.3
+> 日期：2026-11-17
 > 目标：使用 Cursor 逐阶段、逐步骤地实现本项目，达到**企业级工程水准**
-> 配套文档：`校园头盔检测提醒助手-项目深度分析与研发设计说明书.md`（唯一事实来源）
+> 配套文档：
+> - `校园头盔检测提醒助手-项目深度分析与研发设计说明书.md`（需求与架构，唯一事实来源）
+> - 仓库根目录 [`design.md`](../../design.md)（**前端视觉与交互唯一事实来源**）
+> - [`逐项实现计划.md`](逐项实现计划.md)（**进度看板与验收口径**）
+>
+> 📌 **v1.3 变更摘要（2026-11-17）**：
+> 1. **新增 §5.9 P3-0：认证 API** —— P3-1/P3-2 完成后实测发现后端
+>    `/api/v1/auth/*` 四个接口完全缺失，登录链路断裂导致**管理后台整体不可用**，
+>    故补此框并置于 P3 阶段最前；
+> 2. P3-1 / P3-2 提示词框加「✅ 已完成」标记（含实际交付清单与偏差说明）；
+> 3. §6.3 P3-3 标注 8 页中 2 页为占位、1 页为简化版，并明确后端积分 API 缺失；
+> 4. §6.4 P3-4 标注 WebSocket 基础设施缺失；
+> 5. 第 7 部分 P4 标注小程序仅完成自查单页、`tokens.scss` 缺失；
+> 6. 附录 B 状态表补充 P3-0 及各阶段真实完成度；
+> 7. 全文顶部指向新增的 `逐项实现计划.md` 作为唯一进度看板。
+>
+> 📌 **v1.2 变更摘要（2026-11-17）**：
+> 1. §10 新增「v1.1 五铁律落地任务」—— 微明色阶 / 暗色字重-40 / 流式逐字 blur /
+>    tabular-nums 锁死 / 双阻尼物理 的可执行任务清单（详见 `design.md`）；
+> 2. CI 检查规则数由 10 条更新为 15 条（`design.md` §15.1）；
+> 3. v1.1 变更摘要（原 P0/P1/P2 状态更新）保持不变。
+>
+> 📌 **v1.1 变更摘要（2026-11-17）**：
+> 1. §0.3 现状全面更新 —— P0/P1/P2 已完成，原「无 admin-web / 无 Alembic / 无认证 / 无 CI」等描述全部失效；
+> 2. P0/P1/P2 各提示词框加「✅ 已完成，勿重复执行」标记；
+> 3. §10 视觉规范改为引用 `design.md`；
+> 4. 附录 B 修正 P0-4 标题（「数据集抢救」→「数据集审计与版本管理」）；
+> 5. 当前工作阶段 = **P3 管理后台业务化**。
 
 ---
 
@@ -20,6 +47,7 @@
 - [第 8 部分：P5 阶段提示词（模型精度）](#第-8-部分p5-阶段提示词模型精度)
 - [第 9 部分：P6 阶段提示词（通知触达）](#第-9-部分p6-阶段提示词通知触达)
 - [第 10 部分：前端视觉规范（Apple HIG 设计系统）](#第-10-部分前端视觉规范apple-hig-设计系统)
+  - ⚠️ 已被仓库根目录 `design.md` 取代，视觉决策以 `design.md` 为准
 - [第 11 部分：质量门禁与验收提示词](#第-11-部分质量门禁与验收提示词)
 - [第 12 部分：排错与重构提示词](#第-12-部分排错与重构提示词)
 - [附录 A：Cursor 工作流操作手册](#附录-a cursor-工作流操作手册)
@@ -52,35 +80,49 @@
 
 ### 0.3 项目当前真实状态（务必让 Cursor 知道）
 
-> ⚠️ **本节已于 2026-11-15 随 P0 工程基座完成而更新。**
-> 原版本记载的「无 Git 仓库 / 无依赖清单 / 无 README / 数据集丢失」**均已不成立**，
-> 下表是当前唯一有效的事实来源。
+> ⚠️ **本节已于 2026-11-17 随 P0 + P1 + P2 完成而全面更新。**
+> 原版本记载的「无 Git 仓库 / 无依赖清单 / 无 README / 数据集丢失 / 无 Vue3 后台 / 裸 SQL」
+> **均已不成立**，下表是当前唯一有效的事实来源。
 
 ```yaml
 现状:
-  后端: FastAPI + SQLite + 裸 SQL，已实现 health/sources/stats/events/review/alerts/self-check
+  后端: FastAPI + SQLAlchemy 2.0 + Alembic，已完成 api/domain/services/repositories/models/schemas/core 全分层
   采集: detect.py 单进程单摄像头，YOLOv8 track，跨帧投票判定，写 passes/events
-  算法: tracks.py（纯函数）+ selfcheck.py（模型 pin + 三态判定 + 推理名额控制）
-  前端: miniprogram/ = UniApp 微信小程序（Vue3 + TS），仅"拍照自查"单页
+  算法: tracks.py + selfcheck.py（纯函数 + 模型 pin + 三态判定）均保留
+  身份: P1 已完成 —— 车辆外观特征(128维) / 车牌 OCR / 多证据对数似然融合 / 车辆共现图谱
+  决策: P2 已完成 —— 规则决策引擎 / 熔断器 / 积分台账 / 审批服务 / 申诉流程 / LLM 话术(模板兜底)
+  前端: admin-web/ = Vue3 管理后台（骨架+7个业务页，lint/type-check 全绿）
+        miniprogram/ = UniApp 微信小程序（Vue3 + TS），仅"拍照自查"单页
 
   已完成:
-    - Git 仓库已建立（仓库根 = E:/AI办公比赛/bisai），首个提交 86f8eba
-    - helmet-guard/pyproject.toml 依赖与工具配置（ruff/mypy/pytest/coverage）
-    - helmet-guard/README.md + .env.example + .gitignore + .gitattributes
-    - helmet-guard/tests/conftest.py（测试隔离 + tmp_path 落盘规避）
-    - 质量门禁全绿：ruff check 0 错 / mypy strict 0 错 / pytest 34 通过 / 覆盖率 71.22%
-    - Python 3.14.5（D:\Pycharm\python3.14），torch 2.15.0 + ultralytics 8.4.213
+    - Git 仓库（仓库根 = E:/AI办公比赛/bisai），提交 86f8eba → 09b831f → c787d03
+    - P0 工程基座：pyproject.toml / ruff / mypy strict / pytest / CI 双 workflow
+    - P0 数据库：5 个 Alembic 迁移（0001_baseline → 0005_decision_review_appeal）
+    - P0 后台骨架：admin-web/（design-tokens / reset / typography / utilities / mixins /
+                   element-theme / AppLayout / 7 个视图 / 7 个组件 / Axios 请求层 / 路由守卫）
+    - P1 身份域：6 张表 + 仓储 + 域逻辑 + 融合算法 + OCR + 共现图谱 + 身份管理 API
+    - P2 决策域：3 张表 + 决策引擎 + 熔断器 + 积分台账 + 审批/申诉 API + LLM 话术
+    - CI：.github/workflows/backend.yml（ruff/format/mypy/pytest）+ admin-web.yml（eslint/prettier/vue-tsc/build）
     - 数据集完整，无需恢复（详见下方「数据集」段）
 
-  缺失:
-    - 无 app/core/（config/errors/security/middleware/deps 尚未抽象）
-    - 无 app/models/ 与 app/repositories/（仍是裸 SQL）
-    - 无 Alembic 迁移体系
-    - 无 app/schemas/（响应体未 Pydantic 化）
-    - 无 Vue3 管理后台（admin-web/ 不存在）
-    - 无数据库业务表（仅 6 张表）
-    - 无认证鉴权
-    - 无 CI（.github/workflows/ 未建立）
+  缺失（下一阶段重点）:
+    - P3 管理后台业务化：Dashboard 仍是骨架数据；审批中心/事件/积分页待接入真实 API
+    - P3 前端缺失组件：FactorList / RiskHint / DecisionCard / StatusBadge / ScoreDelta
+    - P3 前端缺失模块：ECharts 统一主题、scripts/check-design-tokens.mjs 设计规范检查
+    - P3 缺失页面：实时监控大屏 / 策略配置+模拟器 / 申诉处理 / 审计日志 / 模型管理 / 点位管理
+    - P4 小程序改造：仅"拍照自查"单页，缺 styles/tokens.scss 与全部学生端页面
+    - P5 模型精度：两阶段法（头部 ROI + 分类器 + 温度标定）尚未开始
+    - P6 通知触达：app/services/notification/ 尚未建立
+    - 采集侧：单点位硬编码 ROI 未 DB 化，多点位 worker 未实现
+
+  当前质量门禁实测（2026-11-17）:
+    - ruff check .: 0 错 ✅（已修 0002_identity_domain.py 的 12 处 E501）
+    - mypy app: 0 错（79 个源文件）
+    - pytest: 296 个用例全部通过，覆盖率 81.74%（门槛 60%）
+    - admin-web: vue-tsc 0 错 / eslint 0 错
+    - ⚠️ ruff format --check .: 39 个文件未格式化（**既有状态，非本轮引入**）。
+      CI 的 `ruff format --check` 步骤会因此失败 —— 需单独执行 `ruff format .` 收敛，
+      属纯机械格式化，不改变任何行为。
 
   数据集:
     状态: 完整，无需恢复
@@ -309,35 +351,36 @@ e:/AI办公比赛/bisai/
 > **目标**：把现有原型升级为企业级工程基座。**不要写业务功能。**
 > **预计产出**：Git 仓库、依赖管理、配置体系、异常体系、数据库迁移工具、测试基座、admin-web 骨架。
 
-### P0 阶段完成状态（2026-11-15 更新）
+### P0 阶段完成状态（2026-11-17 更新）
 
 | 任务 | 状态 | 说明 |
 |---|---|---|
-| **3.1 P0-1 工程基座初始化** | 🟡 **部分完成** | 见下方说明 |
-| 3.2 P0-2 数据库迁移与仓储基座 | ⬜ 未开始 | — |
-| 3.3 P0-3 管理后台骨架（Vue3） | ⬜ 未开始 | — |
-| 3.4 P0-4 数据集审计与版本管理 | ⬜ 未开始 | 前提已修订（数据集完整） |
+| **3.1 P0-1 工程基座初始化** | ✅ 已完成 | 含 core/ 层、schemas/common.py、.env.example、CI |
+| 3.2 P0-2 数据库迁移与仓储基座 | ✅ 已完成 | Alembic + ORM + 仓储层 + 兼容层 |
+| **3.3 P0-3 管理后台骨架（Vue3）** | ✅ **已完成** | `admin-web/`，lint/type-check/format/build 四门禁全绿 |
+| **3.4 P0-4 数据集审计与版本管理** | ✅ **已完成** | `scripts/audit_dataset.py` + 审计报告 + 数据说明；只读已验证 |
 
-**P0-1 已完成的部分**（**不要重复执行**）：
-- ✅ Git 仓库（仓库根 `E:/AI办公比赛/bisai`），首个提交 `86f8eba`
+**P0 全部完成**（**不要重复执行**）：
+- ✅ Git 仓库（仓库根 `E:/AI办公比赛/bisai`），提交 `86f8eba` → `09b831f` → `c787d03`
 - ✅ `helmet-guard/pyproject.toml`（依赖 + ruff/mypy/pytest/coverage 配置）
-- ✅ `helmet-guard/.gitignore`、`.gitattributes`、`.env.example`
-- ✅ `helmet-guard/README.md`
+- ✅ `helmet-guard/.gitignore`、`.gitattributes`、`.env.example`、`README.md`
 - ✅ `helmet-guard/tests/conftest.py`（tmp_db / client fixture + 模型 pin 隔离 + tmp_path 落盘）
-- ✅ 质量门禁全绿：ruff 0 错、mypy strict 0 错、pytest 34 通过、覆盖率 71.22%
-- ✅ Python 3.14.5（`D:\Pycharm\python3.14`），torch 2.15.0 + ultralytics 8.4.213
+- ✅ `app/core/`：`config.py` / `logging.py` / `errors.py` / `security.py` / `middleware.py` / `deps.py`
+- ✅ `app/schemas/`：`common.py` + `identity.py` + `decision.py`
+- ✅ Alembic 5 个迁移：`0001_baseline` → `0002_identity_domain` → `0003_identity_admin`
+  → `0004_scoring_domain` → `0005_decision_review_appeal`
+- ✅ `app/models/` / `app/repositories/`（15 个仓储）/ `app/domain/` / `app/services/` 全分层
+- ✅ CI 双 workflow：`backend.yml`（ruff/format/mypy/pytest）+ `admin-web.yml`（eslint/prettier/vue-tsc/build）
+- ✅ `AGENTS.md` 项目宪法已落盘到仓库根（并已扩充 §18.1 数据集类别映射与数据安全红线）
 
-**P0-1 仍需完成的部分**（**下次执行从这里开始**）：
-- ⬜ `app/core/` 包：`config.py` / `logging.py` / `errors.py` / `security.py` /
-  `middleware.py` / `deps.py`
-- ⬜ `app/schemas/` 包：`common.py`（Page[T] / ErrorResponse / 分页基类）
-- ⬜ `.github/workflows/backend.yml` CI 门禁（见 §11.1）
-- ⬜ `AGENTS.md` 项目宪法（第 2 部分内容）落盘到仓库根
+> **P0-1 / P0-2 / P0-3 的提示词框仅作历史归档**，重新执行会破坏既有实现。
+> 当前请直接进入 **第 6 部分 P3**（管理后台业务化）。
 
-> 执行 P0-1 剩余部分时，**先读 `helmet-guard/pyproject.toml` 与
-> `helmet-guard/tests/conftest.py`**，沿用既有配置与 fixture，不要重建。
+### 3.1 P0-1：工程基座初始化（✅ 已完成，勿重复执行）
 
-### 3.1 P0-1：工程基座初始化（剩余部分）
+> ⚠️ **本框已完成于 2026-11-15。** 下文保留作为实现规范参考。
+> 重新执行本框会重建已被 P1/P2 依赖的 `app/core/`、`app/schemas/`、CI，
+> **会造成大面积回归**。请勿执行。
 
 ```
 【任务】为 helmet-guard 后端项目建立企业级工程基座。本阶段不实现任何新业务功能。
@@ -627,8 +670,14 @@ helmet-guard/tests/conftest.py，沿用既有配置。
 ## 第 4 部分：P1 阶段提示词（身份识别）
 
 > **目标**：回答"这是谁的车"。这是项目的核心竞争力，分 4 个子阶段。
+>
+> ✅ **P1 已全部完成（2026-11-17 实测）**：`app/domain/vehicle_appearance.py` /
+> `identity_fusion.py` / `cooccurrence.py` / `plate.py`、`app/services/identity/`（7 文件）、
+> `app/api/v1/identity.py`、`app/repositories/identity.py` + `vehicle.py`、
+> 迁移 `0002_identity_domain` + `0003_identity_admin`、测试 14+32+12+37+7 用例。
+> **下方提示词框仅作历史归档，请勿重复执行。**
 
-### 4.1 P1-1：身份域数据模型
+### 4.1 P1-1：身份域数据模型（✅ 已完成，勿重复执行）
 
 ```
 【任务】新增身份识别相关的数据模型与迁移。
@@ -687,7 +736,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       Repository 方法签名清单、测试结果。
 ```
 
-### 4.2 P1-2：车辆外观特征提取
+### 4.2 P1-2：车辆外观特征提取（✅ 已完成，勿重复执行）
 
 ```
 【任务】实现车辆外观特征（128 维 embedding）的提取与相似度匹配。
@@ -737,7 +786,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       单元测试清单与结果。
 ```
 
-### 4.3 P1-3：多证据身份融合
+### 4.3 P1-3：多证据身份融合（✅ 已完成，勿重复执行）
 
 ```
 【任务】实现车牌/二维码/外观/共现多证据的身份置信度融合。
@@ -801,7 +850,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       完整测试用例表（含每个用例的输入输出）、冲突处理说明。
 ```
 
-### 4.4 P1-4：车牌 OCR 接入
+### 4.4 P1-4：车牌 OCR 接入（✅ 已完成，勿重复执行）
 
 ```
 【任务】实现车牌检测与识别（可先做可插拔封装 + 真实实现骨架）。
@@ -848,7 +897,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       与生产级 PaddleOCR 方案的差异说明、测试结果。
 ```
 
-### 4.5 P1-5：车辆共现图谱与匹配
+### 4.5 P1-5：车辆共现图谱与匹配（✅ 已完成，勿重复执行）
 
 ```
 【任务】实现基于时空共现的车辆归属推断（纯软件兜底方案）。
@@ -903,7 +952,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       匹配算法说明（含降级路径）、测试结果。
 ```
 
-### 4.6 P1-6：身份管理 API 与后台页面
+### 4.6 P1-6：身份管理 API 与后台页面（⚠️ 后端已完成，前端页待 P3 补全）
 
 ```
 【任务】暴露身份管理 API，并实现对应的 Vue3 后台页面。
@@ -971,8 +1020,15 @@ helmet-guard/tests/conftest.py，沿用既有配置。
 ## 第 5 部分：P2 阶段提示词（决策与积分）
 
 > **目标**：实现「AI 自动决策 + 人工审批 + 积分闭环」。这是项目的核心创新。
+>
+> ✅ **P2 已全部完成（2026-11-17 实测）**：`app/domain/decision.py` / `decision_rules.py` /
+> `circuit_breaker.py` / `scoring.py`、`app/services/decision/`（4 文件）/
+> `scoring/ledger.py` / `appeal/service.py`、`app/api/v1/decisions.py` + `appeals.py`、
+> `app/ai/llm_client.py` + `prompts/decision_message.py`、
+> 迁移 `0004_scoring_domain` + `0005_decision_review_appeal`、测试 25+19+15+20+8 用例。
+> **下方提示词框仅作历史归档，请勿重复执行。**
 
-### 5.1 P2-1：积分域数据模型与积分服务
+### 5.1 P2-1：积分域数据模型与积分服务（✅ 已完成，勿重复执行）
 
 ```
 【任务】建立积分账户、积分台账（只增不改）、积分规则。
@@ -1038,7 +1094,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       一致性不变量测试清单、并发测试的实现方式与结果。
 ```
 
-### 5.2 P2-2：AI 决策引擎（核心）
+### 5.2 P2-2：AI 决策引擎（核心）（✅ 已完成，勿重复执行）
 
 ```
 【任务】实现确定性的规则决策引擎——本项目最核心的算法模块。
@@ -1126,7 +1182,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       可解释因子示例（3 个不同场景）、回放 diff 示例。
 ```
 
-### 5.3 P2-3：决策服务与审批流程
+### 5.3 P2-3：决策服务与审批流程（✅ 已完成，勿重复执行）
 
 ```
 【任务】实现决策编排、审批工作流、申诉流程（服务层 + 仓储 + API）。
@@ -1215,7 +1271,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       权限矩阵表、并发控制实现细节、测试结果。
 ```
 
-### 5.4 P2-4：LLM 话术生成（可选增强）
+### 5.4 P2-4：LLM 话术生成（可选增强）（✅ 已完成，勿重复执行）
 
 ```
 【任务】用 LLM 生成面向学生的个性化提醒文案，**只做解释，不做决策**。
@@ -1276,9 +1332,130 @@ helmet-guard/tests/conftest.py，沿用既有配置。
 
 ## 第 6 部分：P3 阶段提示词（Vue3 管理后台）
 
-> **目标**：实现管理后台的核心页面。**风格严格遵循 Apple HIG。**
+> **目标**：实现管理后台的核心页面。**风格严格遵循 `design.md`。**
+>
+> ⚠️ **P3 是当前阶段。** P0（骨架）/ P1（身份）/ P2（决策）均已完成。
+>
+> 📌 **P3 阶段当前真实状态（2026-11-17 实测）**：
+>
+> | 提示词框 | 状态 | 说明 |
+> |---|---|---|
+> | **§5.9 P3-0 认证 API** | ⬜ **未做（最高优先级）** | 后端 `/api/v1/auth/*` 四个接口**完全缺失** → 登录链路断裂 → **管理后台整体不可用** |
+> | §6.1 P3-1 Dashboard 总览 | ✅ 已完成 | 后端 3 接口 + 前端页面 + ECharts 主题 |
+> | §6.2 P3-2 审批中心 | ✅ 已完成（WS 待补） | 后端 8 接口 + 双栏前端 + 证据闭环 |
+> | §6.3 P3-3 其余后台页面 | ⬜ 部分 | 8 页中 **2 页占位**（积分/流水、规则）、**1 页简化**（事件）、**5 页完全缺失**（策略/申诉/模型/审计/用户）；**后端积分 API 亦缺失** |
+> | §6.4 P3-4 实时监控大屏 | ⬜ 未做 | 无 WebSocket 路由、无 `useWebSocket`、无 `DetectionOverlay` |
+>
+> ⚠️ **执行顺序提醒**：**P3-0 必须最先做** —— 否则后续所有页面都无法端到端验证
+> （登录不进去）。详细验收口径见 [`逐项实现计划.md`](逐项实现计划.md)。
+>
+> 📐 **视觉与交互规范以仓库根目录 `design.md` 为唯一事实来源**（含参考图深度解析、
+> 色彩/排版/间距令牌、组件规格、图表规范、领域语义映射、检查脚本规则）。
+> 本部分提示词框只描述**功能与数据流**，视觉细节一律引用 `design.md`，不再重复描述色值。
 
-### 6.1 P3-1：Dashboard 总览
+### 5.9 P3-0：认证 API（⬜ 未做 · P3 阶段第一步 · 阻塞全站）
+
+```
+【任务】实现后端认证 API，补齐 `/api/v1/auth/*` 四个接口。
+
+【为什么必须最先做】
+P3-1/P3-2 实测完成后发现：后端 `app/core/security.py` 已有 JWT 签发/校验与 bcrypt
+密码比对，但**完全没有路由层**。前端 `admin-web/src/api/auth.ts` 的四个调用全部 404
+→ 登录永远失败 → 路由守卫重定向 → **管理后台完全不可用**。
+本框是 P3 阶段乃至整个后台可运行的前提。
+
+【执行步骤】
+1. 先读 `app/core/security.py`（JWT/BCrypt 已就绪）、`app/core/deps.py`（CurrentUserDep）、
+   `app/models/identity.py`（users 表）、`admin-web/src/api/auth.ts` 与
+   `admin-web/src/api/types.ts`（**前端契约，必须照此返回**）。
+2. Alembic 迁移 `0007_auth`（依 P1-1/P2-1 的迁移风格）：
+   - `users` 表新增 `password_hash` TEXT nullable（bcrypt 哈希，**明文绝不入库**）
+   - `user_role` 枚举补 3 值：`admin` / `reviewer` / `observer`
+     （实测后端 `USER_ROLE_VALUES` 只有 6 值，但 `require_roles` 已在用这 3 个角色，
+      不补则管理端角色无法落库）
+3. 创建 `app/repositories/user.py`：
+   - 按 username 查用户；按 student_id 查用户（供 bind-student）
+   - 返回含 `password_hash` / `role` / `status` / `user_id` 的行
+4. 创建 `app/services/auth/service.py`（**服务层做归属校验，不在路由层**）：
+   - `login(username, password)`：
+     a. 查用户，不存在或 `status != 'active'` → **统一 401**，
+        **不区分「用户不存在」与「密码错误」**（防用户枚举）
+     b. `verify_password` 比对（复用 `core/security.py`，含 72 字节截断规则）
+     c. `create_access_token` + `create_refresh_token`
+     d. 组装 `CurrentUser` 响应
+   - `refresh(refresh_token)`：验签 + **校验 `token_type == 'refresh'`**
+     （拿 access_token 当 refresh 用必须 401）
+   - `logout()`：无状态 JWT，服务端仅记审计日志
+   - `bind_student(user_id, student_id)`：校验学号存在且未绑定他人 → 写 `user_student`
+     关联（供 P4-1 小程序首次登录绑定学号）
+5. 创建 `app/schemas/auth.py`：
+   - `LoginBody{username, password}` / `RefreshBody{refresh_token}` /
+     `BindStudentBody{student_id}` / `LoginResult` / `CurrentUserOut`
+6. 创建 `app/api/v1/auth.py`，4+1 个接口：
+   - POST /api/v1/auth/login
+   - POST /api/v1/auth/refresh
+   - POST /api/v1/auth/logout
+   - GET  /api/v1/auth/me      （CurrentUserDep）
+   - POST /api/v1/auth/bind-student
+   - 全部返回统一包络 `{ code: 0, data: ..., message: "" }`（与 Axios 拦截器对齐）
+7. 在 `app/main.py` 注册路由（**注意：该文件用 `with suppress(Exception)` 包导入，
+   静默吞异常会导致路由静默不注册 —— 注册后必须断言路由确实挂上**）。
+8. 种子：`app/seed_demo.py` 补一个 `super_admin` 账号
+   （bcrypt 哈希，**明文只出现在文档/说明中，不入库、不写日志**）。
+   注意 `app/seed_demo.py` 有 **live 库写入保护**，沿用既有保护逻辑。
+
+【前端契约（api/types.ts 已定义，后端必须逐字对齐）】
+   LoginResult  { access_token, refresh_token, token_type, expires_in, user }
+   CurrentUser { id, username, display_name, role, source_ids }
+
+【已核实的坑（照做，别重新踩）】
+- `users.user_id` 是 **String**，前端 `CurrentUser.id` 是 **number** → 需在响应层转换
+  （或改前端类型，实施前定）
+- `users` 表**没有** `display_name` / `source_ids` 列 → 响应层派生
+  （`display_name = username`，`source_ids = []`），或新增列（实施前定）
+- 后端 `USER_ROLE_VALUES` 与前端 `UserRole`（9 值）**不一致** → 见步骤 2
+
+【约束】
+- 刷新令牌用**无状态 JWT**（复用 `create_refresh_token`），不建 refresh_tokens 表
+- **不做人脸识别**，不做多因素认证
+- 密码 bcrypt 哈希；**任何日志/响应不得出现明文密码或哈希**
+- 不在路由层写业务逻辑（归属校验一律在服务层）
+- 不在 domain 层 import ai/ 或做任何 I/O
+
+【验收】
+- POST /auth/login 正确凭据 → 200 + 完整包络（字段名与前端契约逐字一致）
+- 密码错误 / 用户不存在 / 用户已禁用 → **一律 401**，响应文案不泄露差异
+- 无 token / 过期 token / 非法签名 → GET /auth/me 返回 401
+- POST /auth/refresh 有效 refresh_token → 新 access_token；
+  **拿 access_token 当 refresh_token → 401**
+- 绑定学号：学号不存在 / 已被他人绑定 → 明确错误码；成功 → GET /me 的 source_ids 更新
+- 越权：非管理角色访问管理端接口 → 404（与既有 `_require_read` 语义一致）
+- **真浏览器验证**：登录页 → 登录 → 跳转 /dashboard 全通
+- ruff + mypy strict + pytest 全绿
+
+【汇报】
+输出：接口清单与请求/响应示例、令牌方案说明、
+      迁移内容、角色枚举对齐结果、种子账号信息（不含密码明文）、
+      真浏览器验证截图、测试结果。
+```
+
+### 6.1 P3-1：Dashboard 总览（✅ 已完成，勿重复执行）
+
+> ⚠️ **本框已完成于 2026-11-17。** 下文保留作为实现规范参考，重新执行会覆盖既有实现。
+>
+> **实际交付**：
+> - 后端：`app/api/v1/dashboard.py`（overview / trends / point-health 三接口，`READ_ROLES` 守卫，
+>   统一包络 `{code,data,message}`）+ `app/repositories/dashboard.py`（单条 SQL 条件聚合，无 N+1）
+>   + `app/services/dashboard/service.py` + `app/services/dashboard/cache.py`（Redis 30s TTL，
+>   Redis 不可用时降级到进程内 LRU）
+> - 前端：`api/dashboard.ts` + `stores/dashboard.ts`（快照持久化，刷新秒出）+ `charts/theme.ts`
+>   （ECharts 统一主题，从 CSS 变量读色、纯色面积填充非渐变、薄环环形图）
+>   + `views/dashboard/Index.vue`（6 指标卡 + 面积图 + 环形图 + 条形图 + 点位表，三态齐备）
+> - 测试：`tests/test_api_dashboard.py` 8 例（鉴权、形状、点位健康、趋势、非法 metric 422、
+>   缓存去重、佩戴率计算）
+>
+> **与原文的偏差**：指标卡由 4 个扩为 6 个（补「在线点位」「身份绑定率」）；
+> 违规趋势由柱状图改为横向条形图（仅显示有记录时段，避免 24 根空条）。
 
 ```
 【任务】实现管理后台总览页（Dashboard）。
@@ -1348,7 +1525,31 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       ECharts 主题配置、轮询实现、截图描述。
 ```
 
-### 6.2 P3-2：审批中心（**答辩最重要页面**）
+### 6.2 P3-2：审批中心（**答辩最重要页面**）（✅ 已完成，勿重复执行）
+
+> ⚠️ **本框已完成于 2026-11-17。** 下文保留作为实现规范参考，重新执行会覆盖既有实现。
+>
+> **实际交付**：
+> - 后端：`app/api/v1/decisions.py`（列表扩展筛选 `point_id`/`min_confidence`/`sort` 白名单、
+>   详情聚合、`pending-count`、`batch-approve` 支持 `note`）
+>   + `app/services/decision/review_detail.py`（事件/身份/学生/积分/申诉统计聚合 +
+>   6 类风险提示）+ `app/services/decision/review.py`（批量批准支持 note）
+> - **证据闭环（原文遗漏、本次补齐）**：原文要求「证据帧 + 检测框叠加」，
+>   但 `passes` 表原先只存三态结论，检测框**从未落库** → 补迁移 `0006_decision_evidence`
+>   （`boxes` / `image_width` / `image_height`）+ `detect.py` 写入归一化 xyxy + 置信度
+>   + `ReviewDetailService.evidence_payload()` 读出合并进 `evidence_refs`
+> - 前端：`api/decisions.ts` + `stores/decisions.ts`（乐观更新 + 失败回滚快照）
+>   + `views/decisions/List.vue`（双栏、6 快捷键 J/K/Enter/X/D//、批量结果统计）
+>   + `components/EvidenceViewer.vue` / `FactorList.vue` / `DecisionCard.vue` / `RiskHint.vue`
+> - 测试：`tests/test_api_reviews.py` 14 例（档位/点位/置信度筛选、排序白名单、
+>   待审计数、聚合详情、申诉史风险提示、404、批量部分失败、角色守卫、检测框输出与降级）
+>
+> **与原文的偏差**：检测框坐标后端统一存归一化 `xyxy`，前端在 `views/decisions/List.vue`
+> 转换为 `x/y/width/height` 再交给 `EvidenceViewer` —— 保证存储语义单一，
+> 组件接口稳定。
+>
+> **未完成项**：原文第 12 条「WebSocket 实时插入新决策」**未做** —— 依赖 §6.4 的
+> WebSocket 基础设施，`stores/decisions.ts` 已预留 `insertIncoming()` 接口，待 P3-4 接入。
 
 ```
 【任务】实现 AI 决策审批中心。这是整个后台最核心、最常被演示的页面。
@@ -1443,7 +1644,29 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       实时推送接入方式。
 ```
 
-### 6.3 P3-3：事件列表、积分管理、策略配置、申诉处理
+### 6.3 P3-3：事件列表、积分管理、策略配置、申诉处理（⬜ 部分完成）
+
+> 📌 **本框当前状态（2026-11-17 实测）**：
+>
+> | 页 | 状态 | 缺口 |
+> |---|---|---|
+> | `views/events/Index.vue` | ⚠️ 简化版 | 无多维筛选 / 无 CSV 导出 / 无列排序 / 分页固定 |
+> | `views/scores/Ledger.vue` | ❌ 未做 | **且后端积分 API 也不存在**（领域层 `app/domain/scoring.py` + 仓储 `app/repositories/scoring.py` + `app/services/scoring/ledger.py` 全有，只差 API 层） |
+> | `views/scores/Rules.vue` | ❌ 未做 | 同上；规则读写 API 缺失 |
+> | `views/decisions/Policy.vue` | ❌ 未做 | 后端 `/admin/policies/{id}/simulate` **已存在**，缺前端页 + 策略读写 API |
+> | `views/appeals/Index.vue` | ❌ 未做 | 后端 `/admin/appeals` + `/admin/appeals/{id}/resolve` **已存在**，缺前端页 |
+> | `views/models/Index.vue` | ❌ 未做 | 后端模型管理 API 也缺失 |
+> | `views/system/AuditLogs.vue` | ❌ 未做 | 审计查询 API 缺失（表已有） |
+> | `views/system/Users.vue` | ❌ 未做 | 用户管理 API 缺失（依赖 P3-0） |
+>
+> ⚠️ **注意**：当前仓库里存在 `views/points/Index.vue`，但它是**纯静态占位**
+> （`rows` 恒为 `[]`，无任何 API 调用）。按本框重构为 `views/scores/` 目录，
+> 并保留 `/points` 路径别名以免破坏既有书签。
+>
+> 📌 **建议拆 3 个可独立验收的子批次**（详见 [`逐项实现计划.md`](逐项实现计划.md) §4）：
+> ① 积分 API + 积分流水 + 规则配置 + 事件列表增强 + 策略配置
+> ② 申诉处理
+> ③ 模型管理 + 审计日志 + 用户与角色
 
 ```
 【任务】批量实现后台剩余核心页面。
@@ -1529,7 +1752,15 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       筛选条件 URL 同步的实现方式、测试/自检结果。
 ```
 
-### 6.4 P3-4：实时监控大屏
+### 6.4 P3-4：实时监控大屏（⬜ 未做）
+
+> 📌 **本框当前状态（2026-11-17 实测）**：后端**无 WebSocket 路由**，
+> `app/services/realtime/hub.py` 不存在，前端无 `composables/useWebSocket.ts`，
+> 无 `components/DetectionOverlay.vue`（检测框叠加逻辑目前内嵌在
+> `components/EvidenceViewer.vue`，需按本框第 3 条**抽取为共享组件**）。
+>
+> ⚠️ **依赖**：本框同时是 §6.2 P3-2 第 12 条「WebSocket 实时插入新决策」的
+> 前置条件 —— `stores/decisions.ts` 已预留 `insertIncoming()` 接口，待本框接入。
 
 ```
 【任务】实现实时监控大屏（点位视频 + 检测框叠加 + 实时违规流）。
@@ -1603,12 +1834,19 @@ helmet-guard/tests/conftest.py，沿用既有配置。
 
 ---
 
-## 第 7 部分：P4 阶段提示词（小程序改造）
+## 第 7 部分：P4 阶段提示词（小程序改造，v1.3 原生优先）
 
 > **目标**：把只有"拍照自查"的小程序扩展为完整的学生端。
 > **风格**：**必须与现有 `index.vue` 的 Apple 风格完全一致**，绝不破坏现有审美。
+> **设计依据（v1.3）**：`design.md` §13 原生优先完整方案（信息架构 + 9 页规格 + 组件清单 +
+> WXML/WXSS 可落地门禁）；`AGENTS.md` 第 10 条 v2（原生导航/安全区/胶囊/触控/禁用项）。
+> P4-1（请求层/登录/tokens）与 P4-2（首页 `home.vue`）已交付，本部分后续框只做增量页面。
 
-### 7.1 P4-1：请求层与登录
+### 7.1 P4-1：请求层与登录（✅ 已交付，2026-11-18）
+
+> 📌 **本框当前状态**：`api.ts` / `auth.ts` / `useUserStore` / `useScoreStore` /
+> `useNoticeStore` / `tokens.scss` / `common.scss` / `auth.vue`（四步精简版）均已交付。
+> 后续改动只做增量（records 跳转、后端 bind-student 对接），不得重写已交付文件。
 
 ```
 【任务】建立小程序请求层、登录流程、状态管理。
@@ -1671,7 +1909,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       知情同意书全文、pages.json 与 tabBar 配置、自检结果。
 ```
 
-### 7.2 P4-2：首页（积分总览）
+### 7.2 P4-2：首页（积分总览，✅ `home.vue` 已交付，待补 records 跳转）
 
 ```
 【任务】实现小程序首页 —— 激励导向，不做惩罚感。
@@ -1757,7 +1995,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       与现有 index.vue 的一致性说明、截图描述。
 ```
 
-### 7.3 P4-3：记录详情与申诉流程
+### 7.3 P4-3：记录详情与申诉流程（按 `design.md` §13.4 records/detail/appeal 规格实现）
 
 ```
 【任务】实现记录详情页与申诉提交流程。
@@ -1839,7 +2077,7 @@ helmet-guard/tests/conftest.py，沿用既有配置。
       图片压缩方案、校验规则清单。
 ```
 
-### 7.4 P4-4：车辆绑定、排行榜、商城、个人中心
+### 7.4 P4-4：车辆绑定、排行榜、商城、个人中心（按 `design.md` §13.4 vehicle/rank/mall/profile 规格实现）
 
 ```
 【任务】实现剩余小程序页面。
@@ -2202,11 +2440,84 @@ helmet-guard/tests/conftest.py，沿用既有配置。
 
 ## 第 10 部分：前端视觉规范（Apple HIG 设计系统）
 
-> **本部分是所有前端提示词的强制附录，可单独复制给 Cursor。**
+> ⚠️ **本部分已于 2026-11-17 被 `design.md` 取代。**
+>
+> **视觉与交互的唯一事实来源 → 仓库根目录 [`design.md`](../../design.md)。**
+>
+> `design.md` 相比本部分的优势：
+> 1. **补充了参考图深度解析** —— 6 张参考图的布局/色调/交互逐张拆解，并明确本项目采纳与不采纳的部分；
+> 2. **补齐了本部分缺失的关键规范** —— 布局骨架、响应式断点、ECharts 主题、领域语义映射
+>    （L0–L4 等级色、头盔三态色、身份方法色）、文案去惩罚化词表、空态文案对照表；
+> 3. **给出可执行的 CI 检查规则清单**（15 条）而非原则性描述；
+> 4. **标注了与现有代码的对应关系** —— 哪些已实现、哪些待补齐、优先级；
+> 5. **新增 v1.1 五条高级感铁律** —— 微明色阶层级、暗色字重光学补偿、流式逐字 blur、
+>    tabular-nums 全局锁死、双阻尼物理（吸附过阻尼 / 点赞欠阻尼）。
+>
+> 📌 本部分保留为**设计系统的实现规范附录**（令牌、组件、动效的落地细节），
+> 但**视觉决策、页面骨架、组件规格、领域配色一律以 `design.md` 为准**。
+> 两者冲突时以 `design.md` 为准。
 
 ```
 【任务】为 admin-web 与 miniprogram 建立统一的 Apple HIG 风格设计系统。
 只做设计系统与基础组件，不做业务页面。
+
+【前置】先读仓库根目录 `design.md`，以其中的令牌清单与组件规格为准。
+       本框只描述**当前尚缺的实现工作**。
+
+【已实现，勿重复执行】
+- admin-web/src/styles/design-tokens.scss   （令牌 + 亮/暗色）
+- admin-web/src/styles/reset.scss           （含 prefers-reduced-motion）
+- admin-web/src/styles/typography.scss      （文字层级工具类）
+- admin-web/src/styles/utilities.scss       （间距/布局/表面工具类）
+- admin-web/src/styles/mixins.scss          （滚动条/截断/卡片/spinner）
+- admin-web/src/styles/element-theme.scss   （Element Plus SCSS 变量覆写）
+- admin-web/src/components/{StatCard,EmptyState,DataTable,EvidenceViewer,
+                             PageHeader,ErrorBoundary,StudentPicker}.vue
+
+【仍需完成】
+- ⬜ miniprogram/src/styles/tokens.scss      （与 admin-web 同源，SCSS 变量形式）
+- ⬜ miniprogram/src/styles/common.scss      （小程序通用类）
+- ⬜ admin-web/scripts/check-design-tokens.mjs（15 条规则，见 design.md §15.1）
+- ⬜ admin-web/src/components/{StatusBadge,ScoreDelta,FactorList,
+                                 RiskHint,DecisionCard}.vue
+- ⬜ admin-web/src/components/DetectionOverlay.vue（与 EvidenceViewer 共用框渲染）
+- ⬜ admin-web/src/charts/theme.ts             （ECharts 统一主题，见 design.md §8.1）
+
+═══════════════════════════════════════
+〇、v1.1 五铁律落地任务（2026-11-17 新增，优先级最高）
+═══════════════════════════════════════
+【铁律① 微明色阶层级】详见 design.md §3.2
+  ⬜ design-tokens.scss 增加 --color-surface-raised（暗色 L4 悬浮层）
+  ⬜ mixins.scss 的卡片 mixin 去掉 1px 边框，改用 surface 色阶
+  ⬜ 全部卡片/面板/弹窗/抽屉/侧边栏/列表项去掉 border: 1px solid
+  ⬜ 边框白名单仅保留：输入框、表格行、焦点环、Tooltip
+  ⬜ AppLayout.vue 侧边栏右边框改为背景色阶差
+
+【铁律② 暗色字重 -40】详见 design.md §4.3
+  ⬜ design-tokens.scss 新增 --font-weight-regular/medium/semibold/bold
+  ⬜ 暗色模式下：--font-weight-semibold: 500、--font-weight-bold: 600
+  ⬜ 暗色下追加 letter-spacing: +0.1px 补偿
+  ⬜ 全项目 font-weight 改为 var(--font-weight-*)，禁止字面量 600/700
+  ⬜ 确认 prefers-color-scheme 与 data-theme="dark" 两条路径共用同一组令牌
+
+【铁律③ 流式逐字 blur】详见 design.md §9.3
+  ⬜ utilities.scss 新增 .stream-char 类 + stream-blur-reveal 关键帧
+  ⬜ StreamText.vue 接入逐字 blur 晕开（blur(4px)→blur(0)，180ms，每字延迟 12–16ms）
+  ⬜ 中文按字切分、英文按词切分；标点与前字同批
+  ⬜ 同时存在动画的字符节点 ≤ 200，超出降级为逐词
+  ⬜ prefers-reduced-motion 下完全禁用 blur 动画
+
+【铁律④ tabular-nums 锁死】详见 design.md §4.4
+  ⬜ reset.scss 全局开启 font-variant-numeric: tabular-nums
+  ⬜ 同时开启 font-feature-settings: 'tnum' 1, 'lnum' 1
+  ⬜ 确认所有组件未覆盖为 normal / proportional-nums
+  ⬜ 普通数字用正文字体 + tabular，不使用等宽字体
+
+【铁律⑤ 双阻尼物理】详见 design.md §9.2
+  ⬜ design-tokens.scss 新增 --ease-overdamped / --ease-underdamped
+  ⬜ 抽屉/展开/Tab 指示条/吸附归位 → --ease-overdamped（无过冲）
+  ⬜ 点赞/收藏/审批通过/成功徽章 → --ease-underdamped（scale ≤ 1.12）
+  ⬜ 确认无组件直接写 cubic-bezier 字面量
 
 ═══════════════════════════════════════
 一、设计原则（不可违背）
@@ -2745,37 +3056,41 @@ prefers-reduced-motion: reduce 时全部禁用
 
 ## 附录 B：提示词速查表
 
-| 编号 | 任务 | 阶段 | 预计产出 |
-|---|---|---|---|
-| P0-1 | 工程基座初始化 | P0 | Git/依赖/配置/异常/安全/中间件/测试基座 |
-| P0-2 | 数据库迁移与仓储基座 | P0 | Alembic/ORM/Repository/并发测试 |
-| P0-3 | Vue3 后台骨架 | P0 | admin-web 完整骨架 + 设计令牌 |
-| P0-4 | 数据集抢救 | P0 | 数据恢复 + 审计脚本 + LFS |
-| P1-1 | 身份域数据模型 | P1 | 6 张新表 + 仓储 |
-| P1-2 | 车辆外观特征 | P1 | 128 维 embedding + 匹配 |
-| P1-3 | 多证据身份融合 | P1 | 对数似然融合 + 冲突检测 |
-| P1-4 | 车牌 OCR 接入 | P1 | 检测 + 识别 + 校园号牌约束 |
-| P1-5 | 共现图谱匹配 | P1 | 时间窗共现 + 匈牙利匹配 |
-| P1-6 | 身份管理 API 与页面 | P1 | 5 组 API + 3 个后台页 |
-| P2-1 | 积分域与积分服务 | P2 | 台账 + 规则 DSL + 一致性测试 |
-| P2-2 | **AI 决策引擎** | P2 | 纯函数决策 + 熔断 + 回放 |
-| P2-3 | 决策服务与审批流程 | P2 | 全链路 + 并发审批 + 申诉 |
-| P2-4 | LLM 话术生成 | P2 | 模板兜底 + 校验 + PII 隔离 |
-| P3-1 | Dashboard 总览 | P3 | 指标卡 + 图表 + 点位健康 |
-| P3-2 | **审批中心** | P3 | 双栏 + 证据 + 快捷键 + 实时 |
-| P3-3 | 其余后台页面 | P3 | 8 个页面 |
-| P3-4 | 实时监控大屏 | P3 | WebSocket + 视频 + ROI 标定 |
-| P4-1 | 小程序请求层与登录 | P4 | api/auth/store/知情同意 |
-| P4-2 | 小程序首页 | P4 | 积分总览 + 提醒 + 工具 |
-| P4-3 | 记录详情与申诉 | P4 | 3 页 + 申诉窗口期 |
-| P4-4 | 车辆/排行/商城/我的 | P4 | 4 页 |
-| P5-1 | 数据审计与两阶段准备 | P5 | 审计 + 头部分类数据集 |
-| P5-2 | 两阶段训练与集成 | P5 | 分类器 + 温度标定 + 管线改造 |
-| P5-3 | 性能优化与边缘部署 | P5 | ONNX/流水线/多点位/基准 |
-| P6 | 通知触达 | P6 | 渠道抽象 + 模板 + 定时任务 |
-| DS | 设计系统 | 全程 | 令牌 + 基础组件 + 检查脚本 |
-| QA-1 | CI 质量门禁 | 全程 | workflow + pre-commit + 规范检查 |
-| QA-2 | 阶段验收审计 | 每阶段 | 分级问题报告 |
+> **状态列**（2026-11-17 实测）：✅ 已完成 · ⚠️ 部分完成 · ⬜ 未做。
+> 详细验收口径与阶段依赖见 [`逐项实现计划.md`](逐项实现计划.md)。
+
+| 编号 | 任务 | 阶段 | 状态 | 预计产出 |
+|---|---|---|---|---|
+| P0-1 | 工程基座初始化 | P0 | ✅ | Git/依赖/配置/异常/安全/中间件/测试基座 |
+| P0-2 | 数据库迁移与仓储基座 | P0 | ✅ | Alembic/ORM/Repository/并发测试 |
+| P0-3 | Vue3 后台骨架 | P0 | ✅ | admin-web 完整骨架 + 设计令牌 |
+| P0-4 | 数据集审计与版本管理 | P0 | ✅ | 审计脚本 + 审计报告 + 数据说明（**非"抢救"，数据本就完整**） |
+| P1-1 | 身份域数据模型 | P1 | ✅ | 6 张新表 + 仓储 |
+| P1-2 | 车辆外观特征 | P1 | ✅ | 128 维 embedding + 匹配 |
+| P1-3 | 多证据身份融合 | P1 | ✅ | 对数似然融合 + 冲突检测 |
+| P1-4 | 车牌 OCR 接入 | P1 | ✅ | 检测 + 识别 + 校园号牌约束 |
+| P1-5 | 共现图谱匹配 | P1 | ✅ | 时间窗共现 + 匈牙利匹配 |
+| P1-6 | 身份管理 API 与页面 | P1 | ✅ | 5 组 API + 3 个后台页 |
+| P2-1 | 积分域与积分服务 | P2 | ✅ | 台账 + 规则 DSL + 一致性测试 |
+| P2-2 | **AI 决策引擎** | P2 | ✅ | 纯函数决策 + 熔断 + 回放 |
+| P2-3 | 决策服务与审批流程 | P2 | ✅ | 全链路 + 并发审批 + 申诉 |
+| P2-4 | LLM 话术生成 | P2 | ✅ | 模板兜底 + 校验 + PII 隔离 |
+| **P3-0** | **认证 API** | **P3** | **⬜ 最高优先级** | **login/refresh/logout/me/bind-student + 迁移 0007** |
+| P3-1 | Dashboard 总览 | P3 | ✅ | 指标卡 + 图表 + 点位健康 |
+| P3-2 | **审批中心** | P3 | ✅（WS 待补） | 双栏 + 证据闭环 + 快捷键 |
+| P3-3 | 其余后台页面 | P3 | ⚠️ 部分 | 8 页（2 占位 + 1 简化 + 5 缺失）+ 积分 API 缺失 |
+| P3-4 | 实时监控大屏 | P3 | ⬜ | WebSocket + 视频 + ROI 标定 |
+| P4-1 | 小程序请求层与登录 | P4 | ⬜ | api/auth/store/知情同意 + tokens.scss |
+| P4-2 | 小程序首页 | P4 | ⬜ | 积分总览 + 提醒 + 工具 |
+| P4-3 | 记录详情与申诉 | P4 | ⬜ | 3 页 + 申诉窗口期 |
+| P4-4 | 车辆/排行/商城/我的 | P4 | ⬜ | 4 页 |
+| P5-1 | 数据审计与两阶段准备 | P5 | ⬜ | 审计 + 头部分类数据集 |
+| P5-2 | 两阶段训练与集成 | P5 | ⬜ | 分类器 + 温度标定 + 管线改造 |
+| P5-3 | 性能优化与边缘部署 | P5 | ⬜ | ONNX/流水线/多点位/基准 |
+| P6 | 通知触达 | P6 | ⬜ | 渠道抽象 + 模板 + 定时任务 |
+| DS | 设计系统 | 全程 | ⚠️ 部分 | 令牌已建 + 五铁律未落地 + 检查脚本缺失 |
+| QA-1 | CI 质量门禁 | 全程 | ⚠️ 部分 | workflow 已建 + token 检查脚本待接 |
+| QA-2 | 阶段验收审计 | 每阶段 | ⬜ | 分级问题报告 |
 | DBG | Bug 排查 | 随时 | 假设验证 + 根因 + 回归测试 |
 | REF | 重构 | 随时 | 行为等价 + 覆盖率不降 |
 | PERF | 性能优化 | 随时 | 基线 → 定位 → 量化 |
@@ -2807,5 +3122,7 @@ prefers-reduced-motion: reduce 时全部禁用
 
 ---
 
-*文档版本 v1.0 · 2026-11-15*
-*配套：`校园头盔检测提醒助手-项目深度分析与研发设计说明书.md`*
+*文档版本 v1.3 · 2026-11-18*
+*v1.3 变更：P4 提示词对齐 `design.md` v1.3 原生优先方案；P4-1/P4-2 标已交付，后续框只做增量*
+*v1.2 变更：新增 v1.1 五铁律落地任务清单 + CI 规则数更新为 15 条*
+*配套：`design.md`（前端视觉规范）· `校园头盔检测提醒助手-项目深度分析与研发设计说明书.md`*

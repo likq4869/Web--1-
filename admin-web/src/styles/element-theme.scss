@@ -1,0 +1,169 @@
+// ===========================================================================
+// Element Plus 主题覆写 —— Apple HIG 风格
+// 方式：SCSS 变量覆写（`@use ... with (...)`）
+// 注意：Element Plus 2.14 的色板/阴影/字号/圆角等变量均为 map 结构，
+//       覆写时必须按 map 形式提供，否则编译报错。
+// ===========================================================================
+
+@use 'element-plus/theme-chalk/src/common/var.scss' as * with (
+  // ---------- 主色 ----------
+  $color-primary: (
+    'base': #007aff,
+    'hover': #0a84ff,
+    'active': #0062cc,
+    'plain': #007aff,
+    'light-3': #4da3ff,
+    'light-5': #8ac2ff,
+    'light-7': #c7e0ff,
+    'light-8': #dceaff,
+    'light-9': #eef5ff,
+    'dark-2': #0062cc,
+  ),
+
+  // ---------- 成功 ----------
+  $color-success: (
+    'base': #1f9d46,
+    'hover': #35b158,
+    'active': #197d38,
+    'plain': #1f9d46,
+    'light-3': #5ab774,
+    'light-5': #86cb99,
+    'light-7': #b3ddbe,
+    'light-8': #c9e8d1,
+    'light-9': #e4f4e9,
+    'dark-2': #197d38,
+  ),
+
+  // ---------- 警告 ----------
+  $color-warning: (
+    'base': #ff9500,
+    'hover': #ffa933,
+    'active': #cc7700,
+    'plain': #ff9500,
+    'light-3': #ffb766,
+    'light-5': #ffcf99,
+    'light-7': #ffe6cc,
+    'light-8': #fff0e0,
+    'light-9': #fff8f0,
+    'dark-2': #cc7700,
+  ),
+
+  // ---------- 危险 ----------
+  $color-danger: (
+    'base': #d92d20,
+    'hover': #e2483c,
+    'active': #ae2419,
+    'plain': #d92d20,
+    'light-3': #e1685f,
+    'light-5': #ea948e,
+    'light-7': #f3bfbc,
+    'light-8': #f9d7d5,
+    'light-9': #fceceb,
+    'dark-2': #ae2419,
+  ),
+
+  // ---------- 错误（别名 danger） ----------
+  $color-error: (
+    'base': #d92d20,
+    'hover': #e2483c,
+    'active': #ae2419,
+    'plain': #d92d20,
+    'light-3': #e1685f,
+    'light-5': #ea948e,
+    'light-7': #f3bfbc,
+    'light-8': #f9d7d5,
+    'light-9': #fceceb,
+    'dark-2': #ae2419,
+  ),
+
+  // ---------- 信息色（中性偏冷，不喧宾夺主） ----------
+  $color-info: (
+    'base': #6e6e73,
+    'hover': #838388,
+    'active': #5b5b60,
+    'plain': #6e6e73,
+    'light-3': #96969b,
+    'light-5': #b6b6ba,
+    'light-7': #d7d7da,
+    'light-8': #e4e4e6,
+    'light-9': #f2f2f4,
+    'dark-2': #5b5b60,
+  ),
+
+  // ---------- 文字色 ----------
+  $text-color: (
+    'primary': #1c1c1e,
+    'regular': #6e6e73,
+    'secondary': #8e8e93,
+    'placeholder': #c7c7cc,
+    'disabled': #c7c7cc,
+  ),
+
+  // ---------- 边框 ----------
+  $border-color: (
+    '': #e5e5ea,
+    'light': #f2f2f7,
+    'lighter': #f2f2f7,
+    'extra-light': #f2f2f7,
+    'dark': #d8d8dd,
+    'darker': #c7c7cc,
+  ),
+
+  // ---------- 填充色 ----------
+  $fill-color: (
+    '': #f2f2f7,
+    'light': #f7f7f9,
+    'lighter': #fafafc,
+    'extra-light': #fbfbfd,
+    'dark': #e9e9ee,
+    'darker': #e3e3e8,
+    'blank': #ffffff,
+  ),
+
+  // ---------- 背景色 ----------
+  $bg-color: (
+    '': #ffffff,
+    'page': #f7f7f9,
+    'overlay': #ffffff,
+  ),
+
+  // ---------- 阴影：最多一层 ----------
+  $box-shadow: (
+    '': (
+      0 1px 8px rgb(0 0 0 / 6%),
+    ),
+    'light': (
+      0 1px 8px rgb(0 0 0 / 6%),
+    ),
+    'lighter': (
+      0 1px 8px rgb(0 0 0 / 6%),
+    ),
+    'dark': (
+      0 4px 20px rgb(0 0 0 / 10%),
+    ),
+  ),
+
+  // ---------- 圆角：卡片 18 / 按钮 14 / 输入 10 ----------
+  $border-radius: (
+    'base': 10px,
+    'small': 8px,
+    'round': 999px,
+    'circle': 100%,
+  ),
+
+  // ---------- 字号 ----------
+  $font-size: (
+    'extra-large': 22px,
+    'large': 17px,
+    'medium': 15px,
+    'base': 15px,
+    'small': 13px,
+    'extra-small': 12px,
+  ),
+
+  // ---------- 字体族：与设计令牌一致 ----------
+  $font-family: (
+    '':
+      "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
+  )
+);

@@ -1,0 +1,21 @@
+.hg-review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+}
+.hg-review__body {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: var(--space-4);
+  flex: 1;
+  min-height: 0;
+}
+.hg-review__queue {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--card-padding);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+}

@@ -1,0 +1,31 @@
+// 审计日志页样式 —— 只读表格 / 筛选栏（≤100 行门禁）
+.hg-audit__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.hg-audit__search {
+  width: 200px;
+}
+
+.hg-audit__select {
+  width: 160px;
+}
+
+.hg-audit__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.hg-audit__read-only {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  font-size: var(--text-footnote-size);
+  color: var(--color-text-2);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+}

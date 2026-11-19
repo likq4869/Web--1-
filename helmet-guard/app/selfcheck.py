@@ -185,7 +185,7 @@ def _ensure_model() -> tuple[Any, dict[int, str], str]:
         try:
             model = ultralytics.YOLO(str(p))
             names = dict(model.names)
-        except Exception as exc:  # noqa: BLE001
+        except (OSError, RuntimeError, ValueError) as exc:
             raise RuntimeError(
                 f"自查模型未就绪：模型文件损坏或无法加载：{disp}，请重新训练或更换权重"
             ) from exc
@@ -292,7 +292,7 @@ def decode_image(data: bytes) -> Image.Image:
     try:
         header = Image.open(_io.BytesIO(data))
         hw, hh = header.size
-    except Exception as exc:  # noqa: BLE001
+    except (OSError, ValueError) as exc:
         raise ValueError(f"图片无法解码（可能已损坏）：{exc}") from exc
     if hw < MIN_SIDE or hh < MIN_SIDE:
         raise ValueError(f"图片过小（{hw}x{hh}），请停车后靠近拍摄单人单车，或选择更清晰的图片")
@@ -304,7 +304,7 @@ def decode_image(data: bytes) -> Image.Image:
         opened = Image.open(_io.BytesIO(data))
         img = ImageOps.exif_transpose(opened)
         img.load()
-    except Exception as exc:  # noqa: BLE001
+    except (OSError, ValueError) as exc:
         raise ValueError(f"图片无法解码（可能已损坏）：{exc}") from exc
     if img.width < MIN_SIDE or img.height < MIN_SIDE:
         raise ValueError(

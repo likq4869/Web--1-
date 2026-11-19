@@ -1,0 +1,61 @@
+name: backend
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Ruff / mypy / pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: helmet-guard
+
+    env:
+      # 仓库根目录位于工作区一级，CI 单独指向后端项目目录。
+      PYTHONPATH: helmet-guard
+      # 规避受限环境临时目录 ACL 异常，与 tests/conftest.py 行为保持一致。
+      PYTEST_DEBUG_TEMPROOT: ${{ github.workspace }}/helmet-guard/.pytest_tmp
+      HELMET_GUARD_MODE: demo
+      HELMET_GUARD_DB: ${{ github.workspace }}/helmet-guard/.pytest_tmp/ci.db
+      JWT_SECRET: ci-only-not-a-production-secret
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: helmet-guard/pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Ruff check
+        run: python -m ruff check .
+
+      - name: Ruff format check
+        run: python -m ruff format --check .
+
+      - name: Mypy strict
+        run: python -m mypy app
+
+      - name: Pytest with coverage
+        run: python -m pytest --cov=app --cov-report=term-missing --cov-report=xml

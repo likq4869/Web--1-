@@ -1,0 +1,58 @@
+// 模型管理页样式 —— 筛选栏 / 回流面板 / 表格（≤100 行门禁）
+.hg-models__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.hg-models__select {
+  width: 160px;
+}
+
+.hg-models__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.hg-models__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.hg-models__stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 140px;
+}
+
+.hg-models__stat-label {
+  font-size: var(--text-caption-size);
+  color: var(--color-text-2);
+}
+
+.hg-models__stat-value {
+  font-size: var(--text-headline-size);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.hg-models__error {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-caption-size);
+  color: var(--color-danger);
+}
+
+.hg-models__empty-hint {
+  margin-top: var(--space-2);
+  font-size: var(--text-footnote-size);
+  color: var(--color-text-3);
+}

@@ -1,0 +1,208 @@
+// 实时监控页样式 —— 状态栏 / 视频区 / 违规流（≤100 行门禁由拆分保障）
+.hg-live {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+}
+
+.hg-live__status {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--card-gap);
+}
+
+.hg-live__stat {
+  padding: var(--card-padding);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.hg-live__stat-label {
+  font-size: var(--text-caption-size);
+  color: var(--color-text-2);
+}
+
+.hg-live__stat-value {
+  margin-top: var(--space-1);
+  font-size: var(--text-headline-size);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.hg-live__body {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--card-gap);
+  align-items: start;
+}
+
+.hg-live__stage {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-xl);
+  aspect-ratio: 16 / 9;
+}
+
+.hg-live__offline {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.hg-live__offline-title {
+  margin: 0;
+  font-size: var(--text-headline-size);
+  font-weight: var(--text-headline-weight);
+  color: var(--color-text);
+}
+
+.hg-live__offline-desc {
+  margin: 0;
+  font-size: var(--text-footnote-size);
+  color: var(--color-text-2);
+}
+
+.hg-live__feed {
+  display: flex;
+  flex-direction: column;
+  padding: var(--card-padding);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.hg-live__feed-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.hg-live__feed-title {
+  margin: 0;
+  font-size: var(--text-headline-size);
+  font-weight: var(--text-headline-weight);
+  color: var(--color-text);
+}
+
+.hg-live__conn {
+  font-size: var(--text-caption-size);
+  color: var(--color-text-3);
+
+  &.is-open {
+    color: var(--color-success);
+  }
+
+  &.is-error {
+    color: var(--color-danger);
+  }
+}
+
+.hg-live__select {
+  width: 200px;
+}
+
+.hg-live__config {
+  font-size: var(--text-footnote-size);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.hg-live__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 520px;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.hg-live__item {
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-md);
+  animation: live-fade-in var(--duration-base) var(--ease-standard);
+
+  &.is-flash {
+    background-color: var(--color-primary-tint);
+  }
+}
+
+@keyframes live-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.hg-live__item-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-footnote-size);
+  font-weight: var(--text-subhead-weight);
+  color: var(--color-text);
+}
+
+.hg-live__item-meta {
+  margin: 0;
+  font-size: var(--text-caption-size);
+  color: var(--color-text-2);
+}
+
+.hg-live__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.hg-live__error-text {
+  margin: 0;
+  font-size: var(--text-footnote-size);
+  color: var(--color-danger);
+}
+
+.hg-live__skeleton {
+  min-height: 180px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  animation: live-pulse 1.4s var(--ease-standard) infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 1100px) {
+  .hg-live__status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hg-live__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

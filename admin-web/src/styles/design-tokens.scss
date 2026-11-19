@@ -1,0 +1,261 @@
+// ===========================================================================
+// 设计令牌 —— Apple HIG 风格色板与尺度
+// 单一事实来源：所有颜色/间距/圆角/字号/动效时长必须引用这里的 var()。
+// 禁止在组件中写原始色值或魔法数值。
+// ===========================================================================
+
+:root {
+  // ---------- 字体族 ----------
+  --font-family-base:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Microsoft YaHei',
+    'Helvetica Neue', Arial, sans-serif;
+  --font-family-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Consolas, monospace;
+
+  // ---------- 字重令牌（唯一入口，禁止组件写数字） ----------
+  // 亮色基准；暗色 semibold/bold 各降一档（§4.3.2），regular/medium 保持。
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  // ---------- 字号层级（最多 4 级语义 + 2 个辅助） ----------
+  // 字重一律引用 --font-weight-*，禁止字面量（§4.3.4）。
+  --text-large-title-size: 32px;
+  --text-large-title-line: 40px;
+  --text-large-title-weight: var(--font-weight-bold);
+  --text-large-title-spacing: -0.6px;
+
+  --text-title-size: 22px;
+  --text-title-line: 28px;
+  --text-title-weight: var(--font-weight-semibold);
+  --text-title-spacing: -0.3px;
+
+  --text-headline-size: 17px;
+  --text-headline-line: 22px;
+  --text-headline-weight: var(--font-weight-semibold);
+  --text-headline-spacing: -0.2px;
+
+  --text-body-size: 15px;
+  --text-body-line: 21px;
+  --text-body-weight: var(--font-weight-regular);
+
+  --text-subhead-size: 15px;
+  --text-subhead-line: 21px;
+  --text-subhead-weight: var(--font-weight-semibold);
+
+  --text-footnote-size: 13px;
+  --text-footnote-line: 18px;
+  --text-footnote-weight: var(--font-weight-regular);
+
+  --text-caption-size: 12px;
+  --text-caption-line: 16px;
+  --text-caption-weight: var(--font-weight-regular);
+
+  // ---------- 间距刻度（4 的倍数） ----------
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  // 语义间距：布局场景直接引用，避免重复定义数值
+  --page-padding: var(--space-6);
+  --card-padding: var(--space-4);
+  --card-gap: var(--space-3);
+  --section-gap: var(--space-6);
+
+  // ---------- 圆角 ----------
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 999px;
+
+  // ---------- 控件尺寸 ----------
+  --control-height-desktop: 36px;
+  --control-height-touch: 44px;
+  --control-min-touch-target: 44px;
+  --table-row-height: 44px;
+  --badge-height: 22px;
+  --progress-height: 4px;
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+  --topbar-height: 56px;
+
+  // ---------- 阴影（最多一层） ----------
+  --shadow-card: 0 1px 8px rgb(0 0 0 / 6%);
+  --shadow-pop: 0 4px 20px rgb(0 0 0 / 10%);
+
+  // ---------- 动效 ----------
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 350ms;
+  --duration-stream: 180ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decel: cubic-bezier(0, 0, 0.2, 1);
+
+  // 吸附过阻尼：无过冲、一次到位，用于抽屉/面板吸附/吸顶/Tab指示条。
+  // 过阻尼禁止任何越过目标（y ≤ 1），手感"贴住"而非"撞停"。
+  --ease-overdamped: cubic-bezier(0.22, 1, 0.36, 1);
+  // 点赞欠阻尼：轻微过冲后回落，用于点赞/收藏/审批通过/成功徽章。
+  // 幅度约束：scale ≤ 1.12、位移 ≤ 4px、只回弹 1 次（§9.2.3）。
+  --ease-underdamped: cubic-bezier(0.34, 1.56, 0.64, 1);
+  // 兼容别名（历史命名）：与规范名同值，禁止直接引用旧值做新开发。
+  --ease-snap-overdamped: var(--ease-overdamped);
+  --ease-like-underdamped: var(--ease-underdamped);
+
+  // ---------- 流式输出（逐字 blur 晕开，§9.3.2） ----------
+  // 每字 180ms 从 blur(4px) 晕开，每字延迟 12–16ms；只对新追加字符加动画。
+  --stream-blur-from: 4px;
+  --stream-blur-to: 0px;
+  --stream-opacity-from: 0;
+  --stream-opacity-to: 1;
+  --stream-translate-y: 0px;
+  --stream-step-delay: 14ms;
+  --stream-ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+  // ---------- 层级 ----------
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-dropdown: 1000;
+  --z-overlay: 2000;
+  --z-modal: 3000;
+
+  // ---------- 亮色模式 ----------
+  color-scheme: light;
+
+  --color-primary: #007aff;
+  --color-primary-hover: #0a84ff;
+  --color-primary-active: #0062cc;
+  --color-primary-tint: rgb(0 122 255 / 10%);
+
+  --color-success: #1f9d46;
+  --color-success-tint: rgb(31 157 70 / 10%);
+
+  --color-danger: #d92d20;
+  --color-danger-tint: rgb(217 45 32 / 10%);
+
+  --color-warning: #ff9500;
+  --color-warning-tint: #fef3c7;
+  --color-warning-text: #b54708;
+  --color-deep-warning: #e8590c;
+  --color-deep-warning-tint: rgb(232 89 12 / 10%);
+
+  --color-bg: #f7f7f9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f2f2f7;
+  // 微明色阶：以背景色阶差（而非 1px 边框）建立层次。
+  // 每级约 2~3% 明度差，肉眼可辨但不突兀。
+  --color-surface-3: #ebebf0;
+  --color-surface-4: #e4e4ea;
+  --color-surface-raised: #ffffff;
+  --color-sep: #f2f2f7;
+  --color-sep-strong: #e5e5ea;
+  --color-text: #1c1c1e;
+  --color-text-2: #6e6e73;
+  --color-text-3: #8e8e93;
+  --color-text-4: #c7c7cc;
+  --color-border: #e5e5ea;
+  --color-overlay: rgb(0 0 0 / 40%);
+  --text-tracking-optical: 0;
+}
+
+// ---------- 暗色模式 ----------
+// 通过 [data-theme] 显式切换；同时尊重系统偏好。
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-primary: #0a84ff;
+  --color-primary-hover: #409cff;
+  --color-primary-active: #0071e5;
+  --color-primary-tint: rgb(10 132 255 / 16%);
+
+  --color-success: #30d158;
+  --color-success-tint: rgb(48 209 88 / 16%);
+
+  --color-danger: #ff453a;
+  --color-danger-tint: rgb(255 69 58 / 16%);
+
+  --color-warning: #ff9f0a;
+  --color-warning-tint: #3a2c14;
+  --color-warning-text: #ffd60a;
+  --color-deep-warning: #e8590c;
+  --color-deep-warning-tint: rgb(232 89 12 / 16%);
+
+  --color-bg: #000000;
+  --color-surface: #1c1c1e;
+  --color-surface-2: #2c2c2e;
+  // 微明色阶：暗色模式下以提亮代替描边，级差同样约 2~3%。
+  --color-surface-3: #38383a;
+  --color-surface-4: #454548;
+  --color-surface-raised: #323234;
+  --color-sep: #38383a;
+  --color-sep-strong: #38383a;
+  --color-text: #f2f2f7;
+  --color-text-2: #aeaeb2;
+  --color-text-3: #8e8e93;
+  --color-text-4: #48484a;
+  --color-border: #38383a;
+  --color-overlay: rgb(0 0 0 / 60%);
+
+  // 暗色字重光学补偿（§4.3.2）：semibold 600→500、bold 700→600，
+  // 最多降一档；regular/medium 保持。字距 +0.1px 补偿减重发散感。
+  --font-weight-semibold: 500;
+  --font-weight-bold: 600;
+  --text-tracking-optical: 0.1px;
+
+  --shadow-card: 0 1px 8px rgb(0 0 0 / 40%);
+  --shadow-pop: 0 4px 20px rgb(0 0 0 / 50%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-primary: #0a84ff;
+    --color-primary-hover: #409cff;
+    --color-primary-active: #0071e5;
+    --color-primary-tint: rgb(10 132 255 / 16%);
+
+    --color-success: #30d158;
+    --color-success-tint: rgb(48 209 88 / 16%);
+
+    --color-danger: #ff453a;
+    --color-danger-tint: rgb(255 69 58 / 16%);
+
+    --color-warning: #ff9f0a;
+    --color-warning-tint: #3a2c14;
+    --color-warning-text: #ffd60a;
+    --color-deep-warning: #e8590c;
+    --color-deep-warning-tint: rgb(232 89 12 / 16%);
+
+    --color-bg: #000000;
+    --color-surface: #1c1c1e;
+    --color-surface-2: #2c2c2e;
+    // 微明色阶：暗色模式下以提亮代替描边，级差同样约 2~3%。
+    --color-surface-3: #38383a;
+    --color-surface-4: #454548;
+    --color-surface-raised: #323234;
+    --color-sep: #38383a;
+    --color-sep-strong: #38383a;
+    --color-text: #f2f2f7;
+    --color-text-2: #aeaeb2;
+    --color-text-3: #8e8e93;
+    --color-text-4: #48484a;
+    --color-border: #38383a;
+    --color-overlay: rgb(0 0 0 / 60%);
+
+    // 暗色字重光学补偿（§4.3.2）：semibold 600→500、bold 700→600，
+    // 最多降一档；regular/medium 保持。字距 +0.1px 补偿减重发散感。
+    --font-weight-semibold: 500;
+    --font-weight-bold: 600;
+    --text-tracking-optical: 0.1px;
+
+    --shadow-card: 0 1px 8px rgb(0 0 0 / 40%);
+    --shadow-pop: 0 4px 20px rgb(0 0 0 / 50%);
+  }
+}

@@ -37,6 +37,11 @@ _MANAGED_ENV_VARS = (
     "HELMET_GUARD_SELFCHECK_WEIGHTS",
     "HELMET_GUARD_HEARTBEAT_EXPIRE",
     "HELMET_GUARD_ALERTS_ENABLED",
+    # 核心基座配置：DATABASE_URL 优先级最高，若被外部环境设置会污染
+    # Settings 单例缓存，导致数据库 URL 相关断言失真。
+    "DATABASE_URL",
+    "APP_ENV",
+    "JWT_SECRET",
 )
 
 
@@ -83,6 +88,28 @@ def _isolate_model_pin() -> Iterator[None]:
 
 
 @pytest.fixture(autouse=True)
+def _isolate_database_url(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Iterator[None]:
+    """默认屏蔽本地 `.env` 的 MySQL，保证测试走 SQLite 临时库。
+
+    原因：`helmet-guard/.env` 已配 `DATABASE_URL=mysql...`，而 `Settings`
+    优先级是显式 `DATABASE_URL` > `.env` > `HELMET_GUARD_DB` 推导。
+    未显式声明 `DATABASE_URL` 的测试只设 `HELMET_GUARD_DB`，
+    仍会被 `.env` 拖到 MySQL 真库，导致主键冲突与跨测试污染。
+
+    策略：默认把 `DATABASE_URL` 置空（回落到 `HELMET_GUARD_DB` 推导）；
+    需要 SQLite 显式库的测试仍可在自有夹具里覆盖并 `cache_clear()`。
+    """
+    from app.core.config import get_settings
+
+    monkeypatch.setenv("DATABASE_URL", "")
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
 def _restore_env() -> Iterator[None]:
     """还原被 monkeypatch 改动的环境变量，避免跨测试污染。"""
     saved = {name: os.environ.get(name) for name in _MANAGED_ENV_VARS}
@@ -110,6 +137,19 @@ def tmp_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
 def tmp_db(tmp_path: Path) -> Path:
     """每个测试独立的临时 SQLite 文件路径（尚未创建，由调用方决定建库时机）。"""
     return tmp_path / "test.db"
+
+
+@pytest.fixture
+def seeded_data(tmp_db: Path) -> dict[str, object]:
+    """写入最小可用的演示数据，返回种子信息与数据库路径。
+
+    数据沿用 `app.seed_demo` 的确定性种子（7 戴盔 / 2 未戴盔 / 1 未知），
+    保证不同测试各自拥有独立数据库，互不干扰。
+    """
+    from app import seed_demo
+
+    info = seed_demo.seed(tmp_db)
+    return {"db": tmp_db, **info}
 
 
 @pytest.fixture

@@ -1,0 +1,104 @@
+.hg-review-detail {
+  overflow-y: auto;
+}
+.hg-review-detail__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.hg-review-detail__bar {
+  height: 12px;
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-sm);
+  &--block {
+    width: 100%;
+    height: 96px;
+  }
+}
+.hg-review-detail__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+}
+.hg-review-detail__error-text {
+  font-size: var(--text-body-size);
+  color: var(--color-danger);
+}
+.hg-review-detail__head {
+  margin-bottom: var(--space-4);
+}
+.hg-review-detail__title-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.hg-review-detail__meta {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-footnote-size);
+  color: var(--color-text-2);
+}
+.hg-review-detail__section {
+  margin-bottom: var(--space-5);
+}
+.hg-review-detail__section-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-headline-size);
+  line-height: var(--text-headline-line);
+  font-weight: var(--text-headline-weight);
+  color: var(--color-text);
+}
+.hg-review-detail__level {
+  font-size: var(--text-footnote-size);
+  font-weight: var(--text-subhead-weight);
+  color: var(--color-text-2);
+  &.is-warning {
+    color: var(--color-warning-text);
+  }
+  &.is-deep-warning {
+    color: var(--color-deep-warning);
+  }
+  &.is-danger {
+    color: var(--color-danger);
+  }
+  &.is-success {
+    color: var(--color-success);
+  }
+}
+.hg-review-detail__title {
+  margin: 0;
+  font-size: var(--text-title-size);
+  line-height: var(--text-title-line);
+  font-weight: var(--text-title-weight);
+  color: var(--color-text);
+}
+.hg-review-detail__kv {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+.hg-review-detail__kv-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+.hg-review-detail__risks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.hg-review-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+}
+.hg-review-detail__batch {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-md);
+}

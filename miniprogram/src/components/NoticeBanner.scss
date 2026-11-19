@@ -1,0 +1,73 @@
+/* 待确认提醒条：浅底 + 3px 左边条，小面积状态色；只用 tokens.scss 令牌。 */
+@use '../styles/tokens.scss' as *;
+
+.notice {
+  border: none;
+  border-left: 3px solid $color-warning;
+  border-radius: $radius-md;
+  padding: 12px 14px;
+  margin-bottom: $space-4;
+}
+
+.notice.is-warning {
+  background: $color-warning-tint;
+}
+
+.notice.is-danger {
+  background: $color-danger-tint;
+  border-left-color: $color-danger;
+}
+
+.notice.is-info {
+  background: $color-primary-tint;
+  border-left-color: $color-primary;
+}
+
+.notice-title {
+  display: block;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semibold;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.is-warning .notice-title,
+.is-warning .notice-sub {
+  color: $color-warning-text;
+}
+
+.is-danger .notice-title,
+.is-danger .notice-sub {
+  color: $color-danger;
+}
+
+.is-info .notice-title,
+.is-info .notice-sub {
+  color: $color-primary;
+}
+
+.notice-sub {
+  display: block;
+  font-size: $font-size-footnote;
+  line-height: 20px;
+  margin-top: 4px;
+}
+
+.notice-actions {
+  display: flex;
+  gap: $space-4;
+  margin-top: $space-2;
+}
+
+.link {
+  font-size: 14px;
+  line-height: 20px;
+  padding: 6px 0;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.link.is-strong {
+  font-weight: $font-weight-semibold;
+}

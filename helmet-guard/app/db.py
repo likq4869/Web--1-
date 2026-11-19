@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS passes (
     occurred_at TEXT NOT NULL,
     rider_status TEXT NOT NULL CHECK (rider_status IN ('helmeted','bare','unknown')),
     model_raw TEXT NOT NULL DEFAULT '',
+    boxes TEXT,
+    image_width INTEGER,
+    image_height INTEGER,
     created_at TEXT NOT NULL,
     UNIQUE (source_id, run_id, pass_id)
 );
@@ -62,6 +65,20 @@ CREATE TABLE IF NOT EXISTS alerts (
     note TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS camera_points (
+    source_id TEXT PRIMARY KEY,
+    roi_x1 FLOAT NOT NULL DEFAULT 0.05,
+    roi_y1 FLOAT NOT NULL DEFAULT 0.2,
+    roi_x2 FLOAT NOT NULL DEFAULT 0.95,
+    roi_y2 FLOAT NOT NULL DEFAULT 0.95,
+    count_line_y FLOAT NOT NULL DEFAULT 0.6,
+    zone_x1 FLOAT NOT NULL DEFAULT 0.2,
+    zone_y1 FLOAT NOT NULL DEFAULT 0.3,
+    zone_x2 FLOAT NOT NULL DEFAULT 0.8,
+    zone_y2 FLOAT NOT NULL DEFAULT 0.9,
+    updated_by TEXT,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 """
 

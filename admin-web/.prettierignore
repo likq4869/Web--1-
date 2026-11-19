@@ -1,0 +1,7 @@
+# 自动生成的类型声明由插件维护，不参与 Prettier 格式化门禁
+# （ESLint 侧已在 eslint.config.js 的 ignores 中豁免，保持两侧一致）
+src/types/auto-imports.d.ts
+src/types/components.d.ts
+dist
+node_modules
+coverage

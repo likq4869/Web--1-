@@ -45,23 +45,24 @@ export const STATUS_TEXT: Record<TriState, string> = {
 
 export interface StatusMeta {
   title: string;
-  icon: string;
+  /** 官方 uni-icons 字体图标 type（本地 ttf，非 SVG/手绘） */
+  iconType: string;
   tint: string;
   tintBg: string;
 }
 
-/** iOS 原生式状态表达：文字 + 有意义的图标，克制用色。 */
+/** iOS 原生式状态表达：文字 + 官方字体图标，克制用色。未知态用中性灰（非红色）。 */
 export const STATUS_META: Record<TriState, StatusMeta> = {
-  helmeted: { title: '已佩戴头盔', icon: '✓', tint: '#1F9D46', tintBg: '#E5F6EA' },
-  bare: { title: '未佩戴头盔', icon: '!', tint: '#D92D20', tintBg: '#FDECEA' },
-  unknown: { title: '暂时无法判断', icon: '?', tint: '#B54708', tintBg: '#FEF3C7' },
+  helmeted: { title: '已佩戴头盔', iconType: 'checkmarkempty', tint: '#1F9D46', tintBg: '#E5F6EA' },
+  bare: { title: '未佩戴头盔', iconType: 'closeempty', tint: '#D92D20', tintBg: '#FDECEA' },
+  unknown: { title: '暂时无法判断', iconType: 'help', tint: '#6E6E73', tintBg: '#F2F2F7' },
 };
 
 export function boxColor(label: string): string {
   const l = String(label ?? '').toLowerCase();
   if (l === 'helmet') return '#1F9D46';
   if (l === 'no helmet' || l === 'no-helmet' || l === 'no_helmet') return '#D92D20';
-  return '#007AFF';
+  return '#8E8E93';
 }
 
 /** 后端 detail 可能是字符串，也可能是 422 校验列表。统一转成一句可读文案。 */

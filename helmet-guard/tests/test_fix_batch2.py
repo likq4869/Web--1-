@@ -14,6 +14,9 @@ def _client_for(db: Path, monkeypatch, mode: str = "demo") -> TestClient:
     import importlib
 
     from app import main as main_mod
+    from app.core.config import get_settings as _get_settings
+
+    _get_settings.cache_clear()
 
     importlib.reload(main_mod)
     return TestClient(main_mod.app)
