@@ -163,28 +163,43 @@ class WechatClient:
         return int(data.get("errcode", -1)) == 0
 
     def resolve_phone(self, phone_code: str | None, phone: str | None) -> str:
-        """解析手机号：优先走微信 phone_code，Mock/开发允许直传 phone。
+        """解析手机号：真实模式只接受微信 phone_code，直传 phone 仅 Mock 联调放行。
+
+        ⚠️ **安全要点**：直传 `phone` 等于「用户自己声明手机号」，一旦在生产放行，
+        任何人只要传任意 11 位号码就能完成手机号绑定与找回（身份冒用）。
+        因此真实模式（`is_mock == False`）必须拒绝直传，只认微信官方
+        `getPhoneNumber` 下发的一次性 `phone_code`。
 
         Args:
             phone_code: `getPhoneNumber` 回调的动态令牌 code。
-            phone: 直传手机号（仅 Mock 模式可用，真机联调用）。
+            phone: 直传手机号（**仅 Mock 模式可用**，真机联调用）。
 
         Returns:
             11 位大陆手机号。
 
         Raises:
-            ExternalServiceError: 微信侧解析失败。
+            ExternalServiceError: 微信侧解析失败，或凭证缺失/被拒。
             ValidationError 由调用方（服务层）按手机号正则统一抛，
             此处只做透传与空值拦截。
         """
-        if phone_code and phone_code.strip() and not self.is_mock:
-            return self._phone_by_code(phone_code.strip())
-        # Mock 模式：直传 phone 即为最终号码（服务层再做正则校验）。
-        if phone and phone.strip():
-            return phone.strip()
-        if phone_code and phone_code.strip() and self.is_mock:
-            # Mock 下也允许只传 code：无法解出真实号码，交由前端补填。
-            raise ExternalServiceError("Mock 模式无法通过 code 解析手机号，请直传 phone 字段联调")
+        code = (phone_code or "").strip()
+        raw_phone = (phone or "").strip()
+
+        if code:
+            if self.is_mock:
+                # Mock 下无法用 code 解出真实号码，交由前端补填。
+                raise ExternalServiceError(
+                    "Mock 模式无法通过 code 解析手机号，请直传 phone 字段联调"
+                )
+            return self._phone_by_code(code)
+
+        if raw_phone:
+            if not self.is_mock:
+                # 生产环境禁止直传：手机号必须来自微信官方授权凭证。
+                raise ExternalServiceError("生产环境不接受直传手机号，请使用微信手机号授权")
+            # Mock 模式：直传 phone 即为最终号码（服务层再做正则校验）。
+            return raw_phone
+
         raise ExternalServiceError("缺少手机号凭证")
 
     def _phone_by_code(self, phone_code: str) -> str:

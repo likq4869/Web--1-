@@ -11,10 +11,10 @@ import app.main as main_mod
 
 
 def test_all_routers_are_registered() -> None:
-    """全部路由显式注册（B-1）：OpenAPI 必须包含 64 条路径。"""
+    """全部路由显式注册（B-1）：OpenAPI 必须包含 65 条路径。"""
     paths = main_mod.app.openapi()["paths"]
     expected = (
-        # P3-0 认证（5）+ 微信快捷登录扩展（3 个路径键：wechat-login/bind-phone/profile）
+        # P3-0 认证（5）+ 微信快捷登录扩展（4 路径：wechat-login/bind-phone/profile/check-session）
         "/api/v1/auth/login",
         "/api/v1/auth/refresh",
         "/api/v1/auth/logout",
@@ -23,6 +23,7 @@ def test_all_routers_are_registered() -> None:
         "/api/v1/auth/wechat-login",
         "/api/v1/auth/bind-phone",
         "/api/v1/auth/profile",
+        "/api/v1/auth/check-session",
         # P4-1 组织级联（1）
         "/api/v1/org/units",
         # P1-6 身份管理（10）

@@ -6,37 +6,42 @@
 
 ## 目录结构
     ```
-e:/AI办公比赛/bisai/
-├── helmet-guard/          # 后端 + 采集进程（Python）
-│   ├── app/
-│   │   ├── api/           # 路由层（v1）
-│   │   ├── core/          # 配置、异常、依赖注入、日志
-│   │   ├── domain/        # 纯领域逻辑（无 I/O）
-│   │   ├── services/      # 业务服务
-│   │   ├── repositories/  # 数据访问
-│   │   ├── models/        # ORM 模型
-│   │   ├── schemas/       # Pydantic 出入参
-│   │   ├── workers/       # Celery 异步任务
-│   │   └── ai/            # 模型封装、LLM 客户端
-│   ├── tests/
-│   ├── scripts/
-│   ├── pyproject.toml
-│   └── alembic/
-├── admin-web/             # Vue3 管理后台
-├── miniprogram/           # UniApp 微信小程序（学生端）
-├── 数据集/                 # 原始数据集（不进 Git LFS 主体）
-├── docs文档/               # 设计与文档
-└── design.md              # 前端视觉与交互规范（唯一事实来源）
-    ```
+helmet-guard/               # 后端 + 采集进程（Python），本仓库的发布主体
+├── app/
+│   ├── api/           # 路由层（v1）
+│   ├── core/          # 配置、异常、依赖注入、日志、OpenAPI 元信息
+│   ├── domain/        # 纯领域逻辑（无 I/O）
+│   ├── services/      # 业务服务
+│   ├── repositories/  # 数据访问
+│   ├── models/        # ORM 模型
+│   ├── schemas/       # Pydantic 出入参
+│   ├── workers/       # Celery 异步任务
+│   └── ai/            # 模型封装、LLM 客户端
+├── tests/
+├── scripts/           # 运维与文档导出脚本
+├── migrations/        # Alembic 迁移
+├── Sql/               # MySQL 建库脚本
+├── docs文档/          # 设计与文档（含生成的接口文档.html）
+├── .github/workflows/ # CI：ruff / mypy / pytest
+├── pyproject.toml
+└── AGENTS.md          # 本文件（项目宪法）
+```
+
+> **仓库范围**：本仓库仅发布后端 `helmet-guard/`。管理端（`admin-web/`）与
+> 微信小程序（`miniprogram/`）源码保留在本地工作区，不进入版本库。
+> `design.md`（前端视觉与交互规范）同理，随前端项目一并留在本地。
+> 二者的前端改动仍须遵守本文件「前端视觉与交互（强制）」章节的全部约束。
+
 
 ## 文档体系（各司其职，冲突时按此优先级）
 
 | 文档 | 职责 | 优先级 |
 |---|---|---|
 | `AGENTS.md`（本文件） | 项目宪法、不可违反原则、数据安全红线 | 🔴 最高，任何文档不得与之冲突 |
-| `design.md` | 前端视觉与交互规范（色彩/排版/布局/组件/文案） | 🔴 前端改动的前置必读 |
-| `helmet-guard/docs文档/校园头盔检测提醒助手-项目深度分析与研发设计说明书.md` | 需求、架构、数据模型、算法方案、路线图 | 🟠 业务与后端依据 |
-| `helmet-guard/docs文档/Cursor开发提示词全集.md` | 分阶段实现提示词 | 🟡 执行手册（视觉部分以 `design.md` 为准） |
+| `design.md` | 前端视觉与交互规范（色彩/排版/布局/组件/文案）；随前端项目留在本地 | 🔴 前端改动的前置必读 |
+| `docs文档/校园头盔检测提醒助手-项目深度分析与研发设计说明书.md` | 需求、架构、数据模型、算法方案、路线图 | 🟠 业务与后端依据 |
+| `docs文档/Cursor开发提示词全集.md` | 分阶段实现提示词 | 🟡 执行手册（视觉部分以 `design.md` 为准） |
+| `docs文档/接口文档.html` | 可视化接口文档（由 `scripts/export_api_docs.py` 生成） | 🟡 对外交付物 |
 
 ## 不可违反的原则
 
@@ -46,8 +51,14 @@ e:/AI办公比赛/bisai/
 3. **人工兜底**：AI 决策全部进入审批队列。自动生效需白名单配置且受熔断器约束。
 4. **身份不足不惩罚**：身份置信度 < 0.60 的事件不得进入处罚决策，只进待识别池。
 5. **正向激励**：积分、排行、勋章、商城与惩罚同等重要，不得只做惩罚。
-6. **隐私最小**：**不做人脸识别**。身份靠「车辆登记 + 账号绑定」。
-   证据图片加密存储、访问留痕、90 天自动过期删除。
+6. **隐私最小**：默认**不做人脸识别**。身份靠「车辆登记 + 账号绑定」。
+  仅在学生明确点选、且仅在登录场景，可选用微信官方安全注册插件
+  （provider `wxc7b7f914565de923`，类目 `工具->办公`，`manifest.json → mp-weixin.plugins.loginplugin`，
+  用到登录的页面经 `pages.json → mp-weixin.usingComponents.login = plugin://loginplugin/login` 注册后，
+  以 `<login :modal @success @fail @cancel>` 单入口承接授权）做头像昵称快速验证；
+  插件只取必要字段（`avatarUrl / nickName` 仅展示预填，`openid / phone_code → 手机号` 仍走后端三件套），
+  人脸 / 身份证影像不落库、不透传后端。证据图片仍加密存储、访问留痕、90 天自动过期删除。
+  未点选插件时走自建官方三件套（`code2session / getPhoneNumber / checkSessionKey`）。
 7. **学生可申诉**：每条处罚都有申诉入口，申诉需人工二次处理。
 8. **最小权限**：学生只能看自己的数据；管理员分角色（RBAC）。
 
@@ -104,7 +115,7 @@ e:/AI办公比赛/bisai/
 
 ## 前端视觉与交互（强制）
 
-**仓库根目录 `design.md` 是前端视觉与交互的唯一事实来源。**
+**本地工作区根目录 `design.md`（随前端项目保留在本地，不入库）是前端视觉与交互的唯一事实来源。**
 
 涉及任何前端改动（`admin-web/` 与 `miniprogram/`）时，动手前必须先读 `design.md`，
 并遵守以下硬性约束（摘要，详细规格见 `design.md`）：
@@ -131,8 +142,11 @@ e:/AI办公比赛/bisai/
 9. **证据优先（与原则 1 呼应）**：审批与记录详情**必须展示证据帧 + 检测框叠加**，
    检测框使用归一化百分比定位，容器 `aspect-ratio` 必须等于后端返回的
    `image_width / image_height`（横竖图都要正确对齐）。
-10. **小程序原生优先（2026-11-18 新增，2026-11-18 修订 v2）**：小程序标题由微信原生导航栏承担
-  （`pages.json → navigationBarTitleText`），页面内**禁用自定义顶栏 / 品牌条 /
+10. **小程序原生优先（2026-11-18 新增，2026-11-20 修订 v3）**：tab 三页（首页/头盔自查/我的）
+  用 `navigationStyle: custom` 做沉浸式顶栏（原生「首页」大标题会压住问候语，故取消），
+  页内首部必须放 `.nav-spacer` 占位（高度 = 状态栏 + 胶囊 + 8px，胶囊经
+  `uni.getMenuButtonBoundingClientRect()` 动态避让、不硬编码）；
+  `auth` 表单页保留原生导航栏（需要系统返回）；页面内仍**禁用品牌条 /
   大插画视觉区 / Hero 大标题 + 流式副标题 / Landing 页结构**；
   登录页只保留「步骤指示 + 功能卡片 + 协议行」；
   启动页（launch）由微信统一提供，**不自定义**（见微信设计指南 Launch Page Loading）；

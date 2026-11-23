@@ -35,6 +35,13 @@ from app.api.v1.system import router as _system_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.core.middleware import install_middlewares, register_error_handlers
+from app.core.openapi_meta import (
+    API_DESCRIPTION,
+    API_TAGS,
+    API_TITLE,
+    API_VERSION,
+    install_openapi,
+)
 from app.db import init_db
 from app.middleware.upload_limit import selfcheck_body_limit
 
@@ -74,7 +81,16 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         _app.state.db_engine = None
 
 
-app = FastAPI(title="头盔守护者后端", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title=API_TITLE,
+    version=API_VERSION,
+    description=API_DESCRIPTION,
+    lifespan=lifespan,
+    openapi_tags=API_TAGS,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+)
 
 # 核心基座接入：初始化结构化日志、注册领域异常处理器与请求追踪中间件。
 configure_logging(get_settings())
@@ -113,6 +129,9 @@ app.include_router(_system_router)
 app.include_router(_events_legacy_router)
 # 小程序自查路由（路径与响应形状逐字不变，selfcheck.ts 依赖）。
 app.include_router(_selfcheck_router)
+
+# 自定义 OpenAPI 生成：注入分组说明、Bearer 鉴权方案，并标注公开接口。
+install_openapi(app)
 
 
 __all__ = ["app", "lifespan"]

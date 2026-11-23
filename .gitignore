@@ -69,3 +69,11 @@ Thumbs.db
 # 1.py 为空的临时文件；hello.py 为一次性环境自检脚本，均不入库
 /1.py
 helmet-guard/hello.py
+
+# ---- 前端项目（不入库）----
+# 本仓库仅发布后端（helmet-guard/）。管理端与小程序源码保留在本地工作区，
+# 不进入版本库。目录模式必须带前导斜杠，否则会误伤 helmet-guard/scripts/。
+/admin-web/
+/miniprogram/
+/design.md
+/start-all.bat
